@@ -1,0 +1,91 @@
+{
+    "intents": [
+      {
+        "tag": "chào",
+        "patterns": ["Xin chào", "Chào bạn", "Hello", "Hi"],
+        "responses": ["Chào bạn! Tôi có thể giúp gì cho bạn?", "Xin chào! Bạn cần hỗ trợ gì ạ?"]
+      },
+      {
+        "tag": "tim_san_pham",
+        "patterns": [
+          "Tôi muốn tìm áo thun",
+          "Có sản phẩm nào là áo hoodie không?",
+          "Shop có bán quần jean không?",
+          "Tìm giúp tôi váy công sở",
+          "Tôi đang cần áo khoác"
+        ],
+        "responses": [
+          "Đây là một số sản phẩm bạn có thể tham khảo:"
+        ]
+      },      
+      {
+        "tag": "tạm biệt",
+        "patterns": ["Tạm biệt", "Bye", "Hẹn gặp lại"],
+        "responses": ["Tạm biệt! Hẹn gặp lại bạn sau nhé!", "Chúc bạn một ngày tốt lành!"]
+      },
+      {
+        "tag": "cảm ơn",
+        "patterns": ["Cảm ơn", "Cảm ơn bạn", "Thanks", "Thank you"],
+        "responses": ["Không có gì đâu ạ!", "Rất vui được giúp bạn!"]
+      },
+      {
+        "tag": "hỗ trợ",
+        "patterns": ["Làm thế nào để đặt hàng?", "Tôi muốn mua sản phẩm", "Hỗ trợ mua hàng"],
+        "responses": ["Bạn có thể đặt hàng trên website hoặc liên hệ hotline để được hỗ trợ."]
+      },
+      {
+        "tag": "thời gian giao hàng",
+        "patterns": ["Bao lâu thì nhận được hàng?", "Thời gian giao hàng là bao lâu?"],
+        "responses": ["Thời gian giao hàng thường từ 2-5 ngày làm việc tùy theo khu vực."]
+      },
+      {
+        "tag": "gioi_thieu_san_pham",
+        "patterns": ["Shop có bán gì?", "Bạn có những sản phẩm nào?", "Có bán quần áo nam/nữ không?", "Shop có hàng mới không?"],
+        "responses": [
+          "Chúng tôi chuyên cung cấp thời trang nam nữ, từ áo, quần đến phụ kiện cao cấp.",
+          "Shop có rất nhiều sản phẩm thời trang mới về, bạn muốn tìm loại nào ạ?"
+        ]
+      },
+      {
+        "tag": "ho_tro_mua_hang",
+        "patterns": ["Mua hàng như thế nào?", "Làm sao để đặt hàng?", "Hướng dẫn mua hàng"],
+        "responses": [
+          "Bạn có thể đặt hàng trực tiếp trên website hoặc inbox để được hỗ trợ nhanh nhất.",
+          "Chỉ cần chọn sản phẩm yêu thích, thêm vào giỏ hàng và thanh toán là xong!"
+        ]
+      },
+      {
+        "tag": "chinh_sach_doi_tra",
+        "patterns": ["Có đổi hàng không?", "Chính sách đổi trả thế nào?", "Nếu hàng lỗi thì sao?"],
+        "responses": [
+          "Shop hỗ trợ đổi hàng trong vòng 7 ngày nếu sản phẩm còn nguyên tem mác.",
+          "Nếu sản phẩm lỗi do nhà sản xuất, bạn có thể đổi trả miễn phí."
+        ]
+      },
+      {
+        "tag": "thanh_toan",
+        "patterns": ["Có những phương thức thanh toán nào?", "Thanh toán thế nào?", "Có hỗ trợ trả góp không?"],
+        "responses": [
+          "Shop hỗ trợ thanh toán qua ví điện tử Paypal và tiền mặt khi nhận hàng.",
+          "Hiện tại shop chưa hỗ trợ trả góp, nhưng có nhiều chương trình ưu đãi giảm giá."
+        ]
+      },
+      {
+        "tag": "cham_soc_khach_hang",
+        "patterns": ["Liên hệ shop thế nào?", "Tôi cần hỗ trợ thêm", "Shop có số hotline không?"],
+        "responses": [
+          "Bạn có thể liên hệ qua hotline 0123 456 789 hoặc nhắn tin trực tiếp trên fanpage.",
+          "Chúng tôi luôn sẵn sàng hỗ trợ bạn, inbox ngay để được tư vấn nhanh chóng!"
+        ]
+      },
+      {
+        "tag": "tam_biet",
+        "patterns": ["Tạm biệt", "Bye", "Hẹn gặp lại"],
+        "responses": [
+          "Cảm ơn bạn đã ghé thăm shop! Hẹn gặp lại bạn lần sau.",
+          "Chúc bạn một ngày vui vẻ!"
+        ]
+      }
+    ]
+  }
+  
