@@ -17,7 +17,7 @@ const createOrder = async (req, res) => {
                 message: 'The input is required'
             })
         } 
-        console.log('response', req.body)
+        req.body.status = 'pending';
         const response = await OrderService.createOrder(req.body)
         return res.status(200).json(response)
     } catch (e) {
@@ -26,6 +26,27 @@ const createOrder = async (req, res) => {
         })        
     }
 }
+
+const updateOrderStatus = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { status } = req.body;
+
+        if (!status) {
+            return res.status(400).json({ status: 'ERR', message: 'Trạng thái mới là bắt buộc' });
+        }
+
+        const validStatuses = ['pending', 'confirmed', 'shipping', 'delivered', 'cancelled'];
+        if (!validStatuses.includes(status)) {
+            return res.status(400).json({ status: 'ERR', message: 'Trạng thái không hợp lệ' });
+        }
+
+        const response = await OrderService.updateOrderStatus(id, status);
+        return res.status(200).json(response);
+    } catch (error) {
+        return res.status(500).json({ status: 'ERR', message: 'Lỗi máy chủ', error: error.message });
+    }
+};
 
 const getAllDetailsOrder = async (req, res) => {
     try {
@@ -105,5 +126,6 @@ module.exports = {
     getAllDetailsOrder,
     getDetailsOrder,
     cancelOrderDetails,
-    getAllOrder
+    getAllOrder,
+    updateOrderStatus
 }

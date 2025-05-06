@@ -33,12 +33,27 @@ export const WrapperValue = styled.div`
 export const WrapperListOrder = styled.div``;
 
 export const WrapperItemOrder = styled.div`
-  display: flex;
-  align-items: center;
-  padding: 9px 16px;
-  background: #fff;
-  margin-top: 12px;
-  justify-content: center;
+  padding: 12px;
+  background: #fdfdfd;
+  border-radius: 12px;
+  box-shadow: 0 0 0 1px #eee;
+`;
+
+export const ButtonDetail = styled.button`
+  margin-top: 24px;
+  padding: 10px 20px;
+  background-color: #007bff;
+  border: none;
+  border-radius: 8px;
+  color: white;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: 0.3s ease;
+
+  &:hover {
+    background-color: #0056b3;
+  }
 `;
 
 export const WrapperPriceDiscount = styled.span`
@@ -76,14 +91,14 @@ export const WrapperInfo = styled.div`
 
 export const WrapperItemOrderInfo = styled.div`
   padding: 17px 20px;
-  border-bottom: 1px solid #f5f5f5;
   background: #fff;
-  border-top-right-radius: 6px;
-  border-top-left-radius: 6px;
+  border-radius: 12px;
   width: 100%;
   display: flex;
-  justify-content: center;
-`
+  flex-direction: column;
+  gap: 16px;
+`;
+
 
 export const WrapperTotal = styled.div`
   display: flex;

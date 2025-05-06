@@ -9,7 +9,7 @@ const mongoose = require('mongoose');
 const createOrder = (newOrder) => {
     return new Promise(async (resolve, reject) => {
         const { orderItems, paymentMethod, itemsPrice, shippingPrice, totalPrice, 
-            fullName, address, city, phone, user, isPaid, paidAt, email} = newOrder
+            fullName, address, city, phone, user, isPaid, paidAt, email, status} = newOrder
 
         try {
             const promises = orderItems.map(async(order) => {
@@ -65,6 +65,7 @@ const createOrder = (newOrder) => {
                 user: user,
                 isPaid,
                 paidAt,
+                status: status || 'pending'
             })
             if(createOrder) {
                 await EmailService.sendEmailCreateOrder(email, orderItems)
@@ -84,6 +85,42 @@ const createOrder = (newOrder) => {
         }
     })
 }
+
+const updateOrderStatus = (orderId, newStatus) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            const updateFields = { status: newStatus };
+
+            if (newStatus === 'delivered') {
+                updateFields.isDelivered = true;
+                updateFields.deliveredAt = new Date();
+            }
+
+            const updatedOrder = await Order.findByIdAndUpdate(
+                orderId,
+                updateFields,
+                { new: true }
+            );
+
+            if (!updatedOrder) {
+                return resolve({
+                    status: 'ERR',
+                    message: 'Không tìm thấy đơn hàng'
+                });
+            }
+
+            resolve({
+                status: 'OK',
+                message: 'Cập nhật trạng thái thành công',
+                data: updatedOrder
+            });
+        } catch (e) {
+            reject(e);
+        }
+    });
+};
+
+  
 
 // const createOrder = (newOrder) => {
 //     return new Promise(async (resolve, reject) => {
@@ -362,6 +399,7 @@ module.exports = {
     getAllDetailsOrder,
     getOrderDetails,
     cancelOrderDetails,
-    getAllOrder
+    getAllOrder,
+    updateOrderStatus
 
 }

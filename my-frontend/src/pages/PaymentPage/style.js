@@ -1,15 +1,16 @@
 import styled from "styled-components";
-import { Radio } from "antd"
+import { Radio } from "antd";
 
 export const WrapperStyleHeader = styled.div`
-  background: rgb(255, 255, 255);
-  padding: 9px 16px;
+  background: #fff;
+  padding: 12px 20px;
   border-radius: 4px;
   display: flex;
   align-items: center;
+  border-bottom: 1px solid #eee;
 
   span {
-    color: rgb(36, 36, 36);
+    color: #242424;
     font-weight: 400;
     font-size: 13px;
   }
@@ -17,6 +18,9 @@ export const WrapperStyleHeader = styled.div`
 
 export const WrapperLeft = styled.div`
   width: 910px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 `;
 
 export const WrapperListOrder = styled.div``;
@@ -24,9 +28,10 @@ export const WrapperListOrder = styled.div``;
 export const WrapperItemOrder = styled.div`
   display: flex;
   align-items: center;
-  padding: 9px 16px;
+  padding: 12px 16px;
   background: #fff;
-  margin-top: 12px;
+  border-radius: 12px;
+  box-shadow: 0 0 0 1px #eee;
 `;
 
 export const WrapperPriceDiscount = styled.span`
@@ -41,54 +46,94 @@ export const WrapperCountOrder = styled.div`
   align-items: center;
   width: 84px;
   border: 1px solid #ccc;
-  border-radius: 4px;
+  border-radius: 6px;
 `;
 
 export const WrapperRight = styled.div`
-  width: 320px;
-  margin-left: 20px;
+  width: 340px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  align-items: center;
+  gap: 20px;
+  background: #fff;
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
 `;
 
 export const WrapperInfo = styled.div`
-  padding: 17px 20px;
-  border-bottom: 1px solid #f5f5f5;
-  background: #fff;
-  border-top-right-radius: 6px;
-  border-top-left-radius: 6px;
   width: 100%;
-`;
-
-export const WrapperTotal = styled.div`
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  padding: 17px 20px;
   background: #fff;
-  border-bottom-right-radius: 6px;
-  border-bottom-left-radius: 6px;
-`;
-
-export const Label = styled.span`
-  font-size: 12px;
-  color: #000;
-  font-weight: bold;
-`;
-
-export const WrapperRadio = styled(Radio.Group)`
-  margin-top: 6px;
-  background: rgb(240, 240, 255);
-  border: 1px solid rgb(194, 225, 255);
-  width: 500px;
-  border-radius: 4px;
-  height: 100px;
+  border-radius: 12px;
   padding: 16px;
-  font-weight: normal;
+  box-shadow: 0 0 0 1px #eee;
   display: flex;
   flex-direction: column;
   gap: 10px;
-  justify-content: center;
+
+  span {
+    font-size: 14px;
+  }
+
+  .address {
+    color: #0056ff;
+    font-weight: bold;
+  }
+
+  .change-address {
+    color: #0056ff;
+    cursor: pointer;
+    margin-left: 8px;
+    font-weight: 500;
+  }
+`;
+
+export const WrapperTotal = styled.div`
+  width: 100%;
+  background: #fff;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 0 0 1px #eee;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+
+  span:first-child {
+    font-weight: 600;
+    font-size: 14px;
+  }
+
+  span:last-child {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+
+    span:first-child {
+      font-size: 22px;
+      color: #fe3834;
+      font-weight: 700;
+    }
+
+    span:last-child {
+      font-size: 11px;
+      color: #000;
+    }
+  }
+`;
+
+export const Label = styled.span`
+  font-size: 14px;
+  color: #000;
+  font-weight: 600;
+`;
+
+export const WrapperRadio = styled(Radio.Group)`
+  margin-top: 8px;
+  background: #f5f7ff;
+  border: 1px solid #c2e1ff;
+  width: 100%;
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 `;
