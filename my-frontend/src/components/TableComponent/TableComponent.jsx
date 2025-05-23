@@ -1,101 +1,123 @@
-import { Table } from "antd";
+import { Table, Button, Space } from "antd";
 import React, { useMemo, useState } from "react";
+import { Excel } from "antd-table-saveas-excel";
+import { DownloadOutlined, DeleteOutlined } from "@ant-design/icons";
 import Loading from "../LoadingComponent/Loading";
-// import { DownOutlined } from '@ant-design/icons';
-import { Excel } from "antd-table-saveas-excel"
+import { StyledTableWrapper } from "./TableStyle";
 
+const getStatusLabel = (statusCode) => {
+    switch (statusCode) {
+      case "pending":
+        return "Chờ xử lý";
+      case "processing":
+        return "Đang xử lý";
+      case "delivering":
+        return "Đang giao hàng";
+      case "delivered":
+        return "Đã giao";
+      case "cancelled":
+        return "Đã hủy";
+      default:
+        return "Không rõ";
+    }
+  };
+  
 const TableComponent = (props) => {
-    const {selectionType = 'checkbox', data:dataSource=[], isPending=false, columns=[], handleDeleteMany } = props
-    const newColumnExport = useMemo(() => {
-        const arr = columns?.filter((col) => col.dataIndex !== 'action')
-        return arr
-    }, [columns])
-    const [rowSelectedKeys, setRowSelectedKeys] = useState([])
+  const {
+    selectionType = "checkbox",
+    data: dataSource = [],
+    isPending = false,
+    columns = [],
+    handleDeleteMany,
+    rowKey = "key", // fallback nếu không truyền vào key riêng
+  } = props;
 
-    const rowSelection = {
-        onChange: (selectedRowKeys, selectedRows) => {
-            setRowSelectedKeys(selectedRowKeys)
-        },
-        // getCheckboxProps: (record) => ({
-        //     disabled: record.name === 'Disabled User',
-        //     // Column configuration not to be checked
-        //     name: record.name,
-        // }),
-    };
-    
-    // const items = [
-    //     {
-    //       label: (
-    //         <a target="_blank" rel="noopener noreferrer" href="https://www.antgroup.com">
-    //           1st menu item
-    //         </a>
-    //       ),
-    //       key: '1',
-    //     },
-    //     {
-    //       label: (
-    //         <a target="_blank" rel="noopener noreferrer" href="https://www.aliyun.com">
-    //           2nd menu item（disabled）
-    //         </a>
-    //       ),
-    //       key: '2',
-    //     },
-    //     {
-    //       label: '3rd menu item（disabled）',
-    //       key: '3',
-    //       disabled: true,
-    //     },
-    //   ];
+  const newColumnExport = useMemo(() => {
+    return columns
+      ?.filter((col) => col.dataIndex !== "action")
+      .map((col) => {
+        if (col.dataIndex === "status") {
+          return {
+            ...col,
+            render: undefined, // xóa render function nếu có
+          };
+        }
+        return col;
+      });
+  }, [columns]);
+  
 
-    const handleDeleteAll = () => {
-        handleDeleteMany(rowSelectedKeys)
+  const [rowSelectedKeys, setRowSelectedKeys] = useState([]);
+
+  const rowSelection = {
+    onChange: (selectedRowKeys) => {
+      setRowSelectedKeys(selectedRowKeys);
+    },
+  };
+
+  const handleDeleteAll = () => {
+    if (handleDeleteMany) {
+      handleDeleteMany(rowSelectedKeys);
     }
+  };
 
-    const exportExcel = () => {
-        const excel = new Excel();
-        excel
-            .addSheet("test")
-            .addColumns(newColumnExport)
-            .addDataSource(dataSource, {
-                str2Percent: true
-            })
-            .saveAs("Excel.xlsx")
-    }
-
-    return (
-        <div>
-            <Loading isPending={isPending}>
-                {rowSelectedKeys.length > 0 && (
-                    <div style={{background: '#1d1ddd', color: '#fff', fontWeight: 'bold', padding: '10px', cursor: 'pointer'}} onClick={handleDeleteAll}>
-                    {/* <Dropdown menu={{ items }}>
-                        <a onClick={e => e.preventDefault()}>
-                            <Space>
-                                Hover me
-                                <DownOutlined />
-                            </Space>
-    
-                        </a>
-                    </Dropdown> */}
-    
-                    Xoá tất cả
-                </div>
-                )}
-
-            <button onClick={exportExcel}>Xuất file</button>
-            
-            <Table 
-                rowSelection={{
-                    type: selectionType,
-                    ...rowSelection,
-                }}
-                columns={columns}
-                dataSource={dataSource}
-                {...props}
-            />
-            </Loading>
+  const exportExcel = () => {
+    const excel = new Excel();
+  
+    // map lại dataSource để xuất đúng nhãn status
+    const dataExport = dataSource.map((item) => ({
+      ...item,
+      status: getStatusLabel(item.status),
+    }));
+  
+    excel
+      .addSheet("Danh sách")
+      .addColumns(newColumnExport)
+      .addDataSource(dataExport, {
+        str2Percent: true,
+      })
+      .saveAs("Danh_sach.xlsx");
+  };
+  
+  return (
+    <StyledTableWrapper>
+      <Loading isPending={isPending}>
+        <div style={{ marginBottom: 16, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          {rowSelectedKeys.length > 0 ? (
+            <Button
+              type="primary"
+              danger
+              icon={<DeleteOutlined />}
+              onClick={handleDeleteAll}
+            >
+              Xoá tất cả
+            </Button>
+          ) : <div />}
+  
+          <Button
+            type="primary"
+            icon={<DownloadOutlined />}
+            onClick={exportExcel}
+          >
+            Tạo báo cáo
+          </Button>
         </div>
-    )
+  
+        <Table
+          bordered
+          pagination={{ pageSize: 10 }}
+          rowSelection={{
+            type: selectionType,
+            ...rowSelection,
+          }}
+          columns={columns}
+          dataSource={dataSource}
+          rowKey={rowKey}
+          {...props}
+        />
+      </Loading>
+    </StyledTableWrapper>
+  );
+};
 
-}
-
-export default TableComponent
+export default TableComponent;

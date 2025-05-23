@@ -10,10 +10,13 @@ import {
   ListItem,
   SidebarMenu,
   ContentWrapper,
+  GrowthText,
+  IconWrapper,
+  GradientText,
 } from './style'
 
 import { getItem } from '../../utils'
-import { AppstoreOutlined, ShoppingCartOutlined, UserOutlined, PieChartOutlined } from '@ant-design/icons'
+import { ArrowUpOutlined, ArrowDownOutlined, UserOutlined, ShoppingCartOutlined, PieChartOutlined, AppstoreOutlined, SettingOutlined } from '@ant-design/icons';
 import { Menu, Row, Col, Spin, Typography, Tabs, Card, Table, Tag, Button } from 'antd'
 import RevenueChart from '../../components/Charts/RevenueChart'
 import HeaderComponent from '../../components/HeaderComponent/HeaderComponent'
@@ -21,6 +24,8 @@ import AdminUser from '../../components/AdminUser/AdminUser'
 import AdminProduct from '../../components/AdminProduct/AdminProduct'
 import OrderAdmin from '../../components/OrderAdmin/OrderAdmin'
 import { getDashboardData } from '../../service/DashboardService'
+import AdminHeader from './AdminHeader';
+import ProfileAdmin from '../../components/ProfileAdmin/ProfileAdmin';
 
 const { Title, Text } = Typography
 const { TabPane } = Tabs
@@ -31,6 +36,7 @@ export const AdminPage = () => {
     getItem('Người dùng', 'user', <UserOutlined />),
     getItem('Sản phẩm', 'product', <AppstoreOutlined />),
     getItem('Đơn hàng', 'order', <ShoppingCartOutlined />),
+    getItem('Cập nhật tài khoản', 'profile', <SettingOutlined />),
   ]
 
   const [keySelected, setKeySelected] = useState('')
@@ -149,12 +155,77 @@ export const AdminPage = () => {
       return (
         <Spin spinning={loading}>
           <WrapperContainer>
-            <Row gutter={[24, 24]}>
+          <h1>Tổng quan</h1>
+            {/* <Row gutter={[24, 24]}>
               <Col span={6}><StatCard><CardTitle>Tổng người dùng</CardTitle><CardValue style={{ color: '#1890ff' }}>{dashboardData?.totalUsers || 0}</CardValue></StatCard></Col>
               <Col span={6}><StatCard><CardTitle>Tổng đơn hàng</CardTitle><CardValue style={{ color: '#1890ff' }}>{dashboardData?.totalOrders || 0}</CardValue></StatCard></Col>
               <Col span={6}><StatCard><CardTitle>Chưa thanh toán</CardTitle><CardValue style={{ color: '#1890ff' }}>{dashboardData?.totalPending || 0}</CardValue></StatCard></Col>
               <Col span={6}><StatCard><CardTitle>Tổng doanh thu</CardTitle><CardValue style={{ color: '#1890ff' }}>{(dashboardData?.totalSales || 0).toLocaleString()}₫</CardValue></StatCard></Col>
+            </Row> */}
+            <Row gutter={[24, 24]}>
+              <Col xs={24} sm={12} lg={6}>
+                <StatCard>
+                  <div className="stat-header">
+                    <CardTitle>Tổng người dùng</CardTitle>
+                    <IconWrapper color="#8c88f9">
+                      <UserOutlined />
+                    </IconWrapper>
+                  </div>
+                  <CardValue>{dashboardData?.totalUsers || 0}</CardValue>
+                  <GrowthText positive>
+                    <ArrowUpOutlined /> 5% so với tuần trước
+                  </GrowthText>
+                </StatCard>
+              </Col>
+
+              <Col xs={24} sm={12} lg={6}>
+                <StatCard>
+                  <div className="stat-header">
+                    <CardTitle>Tổng đơn hàng</CardTitle>
+                    <IconWrapper color="#facc15">
+                      <ShoppingCartOutlined />
+                    </IconWrapper>
+                  </div>
+                  <CardValue>{dashboardData?.totalOrders || 0}</CardValue>
+                  <GrowthText positive>
+                    <ArrowUpOutlined /> 10% so với tuần trước
+                  </GrowthText>
+                </StatCard>
+              </Col>
+
+              <Col xs={24} sm={12} lg={6}>
+                <StatCard>
+                  <div className="stat-header">
+                    <CardTitle>Chưa thanh toán</CardTitle>
+                    <IconWrapper color="#ff7a45">
+                      <PieChartOutlined />
+                    </IconWrapper>
+                  </div>
+                  <CardValue>{dashboardData?.totalPending || 0}</CardValue>
+                  <GrowthText>
+                    <ArrowDownOutlined /> 2% so với tuần trước
+                  </GrowthText>
+                </StatCard>
+              </Col>
+
+              <Col xs={24} sm={12} lg={6}>
+                <StatCard>
+                  <div className="stat-header">
+                    <CardTitle>Tổng doanh thu</CardTitle>
+                    <IconWrapper color="#34d399">
+                      <AppstoreOutlined />
+                    </IconWrapper>
+                  </div>
+                  <CardValue>{(dashboardData?.totalSales || 0).toLocaleString()} ₫</CardValue>
+                  <GrowthText positive>
+                    <ArrowUpOutlined /> 8.5% so với tuần trước
+                  </GrowthText>
+                </StatCard>
+              </Col>
             </Row>
+           
+
+
 
             <Row gutter={[24, 24]} style={{ marginTop: 24 }}>
               <Col span={16}>
@@ -184,7 +255,7 @@ export const AdminPage = () => {
                     <ListItem key={product._id}>
                       <img src={product.image} alt={product.name} style={{ width: 48, height: 48, objectFit: 'cover', borderRadius: 8 }} />
                       <div className="info">
-                        <Text strong>{product.name}</Text>
+                        <GradientText strong>{product.name}</GradientText>
                         <div style={{ fontSize: 13, color: '#777' }}>{product.price.toLocaleString()}₫</div>
                         <div style={{ fontSize: 13, color: '#777' }}>{product.selled || 0} lượt mua</div>
                       </div>
@@ -228,6 +299,7 @@ export const AdminPage = () => {
       case 'user': return <AdminUser />
       case 'product': return <AdminProduct />
       case 'order': return <OrderAdmin />
+      case 'profile': return <ProfileAdmin />
       default: return <></>
     }
   }
@@ -241,7 +313,7 @@ export const AdminPage = () => {
   
   return (
     <>
-      <HeaderComponent isHiddenSearch isHiddenCart />
+      <AdminHeader/>
       <div style={{ display: 'flex', overflowX: 'hidden' }}>
         <SidebarMenu>
         <Menu

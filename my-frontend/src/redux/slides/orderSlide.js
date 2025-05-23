@@ -30,7 +30,12 @@ export const orderSlide = createSlice({
   reducers: {
     addOrderProduct: (state, action) => {
         const {orderItem} = action.payload
-        const itemOrder = state?.orderItems?.find((item) => item?.product === orderItem.product)
+        const itemOrder = state?.orderItems?.find((item) => 
+            item?.product === orderItem.product && 
+            item?.sizes === orderItem.sizes && 
+            item?.colors === orderItem.colors  
+    )
+
         if(itemOrder) {
             if(itemOrder.amount <= itemOrder.countInStock) {
                 itemOrder.amount += orderItem?.amount
@@ -38,9 +43,13 @@ export const orderSlide = createSlice({
                 state.isErrorOrder = false
             }
         } else {
-            state.orderItems.push(orderItem)
-            state.isSuccessOrder = true
+            state.orderItems.push({
+                ...orderItem,
+                sizes: orderItem.sizes, // Lưu kích thước đã chọn
+                colors: orderItem.colors, // Lưu màu sắc đã chọn
+            });
         }
+
     },
     resetOrder: (state) => {
         state.isSuccessOrder = false

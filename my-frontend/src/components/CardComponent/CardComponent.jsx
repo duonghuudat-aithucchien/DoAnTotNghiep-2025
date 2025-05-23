@@ -12,10 +12,26 @@ const CardComponent = (props) => {
         navigate(`/product-details/${id}`)
     }
 
+    // Làm tròn rating đến 1 chữ số thập phân
+    const roundedRating = Number(Number(rating).toFixed(1)); // Ví dụ: 4.67 thành 4.7
+    const fullStars = Math.floor(roundedRating); // Số sao đầy đủ (ví dụ: 4.7 -> 4 sao đầy)
+    const hasHalfStar = roundedRating % 1 >= 0.5; // Kiểm tra xem có cần nửa sao không (tạm thời dùng logic hiển thị sao đầy)
+
+    // Tạo mảng sao
+    const stars = Array.from({ length: 5 }, (_, index) => (
+        <StarFilled
+            key={index}
+            style={{
+                fontSize: '12px',
+                color: index < fullStars ? 'yellow' : (index === fullStars && hasHalfStar ? '#d3d3d3' : '#d3d3d3'), // Sao vàng hoặc xám
+            }}
+        />
+    ));
+
   return (
     <WrapperCardStyle
         hoverable
-        headStyle={{width: '200px', height: '200px'}}
+        styles={{width: '200px', height: '200px'}}
         style={{width: 200 }}
         bodyStyle={{ padding: '10px'}}
         cover={<img alt="example" src={image} />}
@@ -30,10 +46,11 @@ const CardComponent = (props) => {
         <WrapperImageStyle src={logo} alt="logo" />
         <StyleNameProduct>{name}</StyleNameProduct>
         <WrapperReportText>
-            <span style={{marginRight: '4px'}}>
-                <span>{rating}</span><StarFilled style={{fontSize: '12px', color: 'yellow'}} />
-            </span>
-            <WrapperStyleTextSell> | Đã bán {selled || 1000}</WrapperStyleTextSell>
+            <span style={{ marginRight: '4px' }}>
+                    <span style={{ marginRight: '4px' }}>{roundedRating}</span> {/* Hiển thị số rating đã làm tròn */}
+                    {stars} {/* Hiển thị mảng sao */}
+                </span>
+            <WrapperStyleTextSell> | Đã bán {selled || 0}</WrapperStyleTextSell>
         </WrapperReportText>
         <WrapperPriceText>
             <span style={{marginRight: '8px'}}>

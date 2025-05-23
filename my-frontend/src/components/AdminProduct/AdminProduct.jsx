@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { WrapperHeader } from './style'
+import { WrapperHeader, WrapperActions, AddButton, PlusIcon, SearchInput, WrapperTableContainer, SearchGroup, WrapperHeaderContainer, WrapperButtons} from './style'
 import { Button, Form, Select, Space } from 'antd'
 import { DeleteOutlined, EditOutlined, PlusOutlined, SearchOutlined, UploadOutlined } from '@ant-design/icons'
 import TableComponent from '../TableComponent/TableComponent'
@@ -25,12 +25,16 @@ const AdminProduct = () => {
     const user = useSelector((state) => state?.user)
     const [typeSelect, setTypeSelect] = useState('')
     const searchInput = useRef(null);
+    const [searchKeyword, setSearchKeyword] = useState('');
+    const [filteredProducts, setFilteredProducts] = useState([]);
+
     const inittial = () => ({
         name: '',
         price: '',
         description: '',
         rating: '',
         image: '',
+        subImages: [],
         type: '',
         countInStock: '',
         newType: '',
@@ -46,9 +50,9 @@ const AdminProduct = () => {
 
     const mutation = useMutationHooks(
         (data) => {
-            const {name, price, description, rating, image, type, countInStock, discount, sizes, colors} =data
+            const {name, price, description, rating, image, subImages, type, countInStock, discount, sizes, colors} =data
             const res = ProductService.createProduct({
-                name, price, description, rating, image, type, countInStock, discount, sizes, colors
+                name, price, description, rating, image, subImages, type, countInStock, discount, sizes, colors
             })
             return res
         },
@@ -192,6 +196,22 @@ const AdminProduct = () => {
         )
     }
 
+    const handleOnchangeSubImages = async ({ fileList }) => {
+        const subImages = await Promise.all(
+          fileList.map(async (file) => {
+            if (!file.url && !file.preview) {
+              file.preview = await getBase64(file.originFileObj);
+            }
+            return file.preview;
+          })
+        );
+        console.log("SubImages:", subImages); // Kiểm tra giá trị subImages
+        setStateProduct({
+          ...stateProduct,
+          subImages,
+        });
+      };
+
     const handleSearch = (selectedKeys, confirm, dataIndex) => {
         confirm();
         // setSearchText(selectedKeys[0]);
@@ -284,6 +304,7 @@ const AdminProduct = () => {
             sorter: (a, b) => a.name.length - b.name.length,
             ...getColumnSearchProps('name')
         },
+        
         {
             title: 'Giá',
             dataIndex: 'price',
@@ -353,6 +374,10 @@ const AdminProduct = () => {
     const dataTable = products?.data?.length && products?.data?.map((product) => {
         return {...product, key: product._id}
     })
+    // const dataTable = filteredProducts?.map((product) => ({
+    //     ...product,
+    //     key: product._id,
+    //   }));
 
 //create
     useEffect(() => {
@@ -402,6 +427,7 @@ const AdminProduct = () => {
             description: '',
             rating: '',
             image: '',
+            subImages: [],
             type: '',
             countInStock: '',
             discount: '',
@@ -432,6 +458,7 @@ const AdminProduct = () => {
             description: '',
             rating: '',
             image: '',
+            subImages: [],
             type: '',
             countInStock: '',
             discount: '',
@@ -455,6 +482,7 @@ const AdminProduct = () => {
             description: stateProduct.description,
             rating: stateProduct.rating,
             image: stateProduct.image,
+            subImages: stateProduct.subImages,
             type: stateProduct.type === 'add_type' ? stateProduct.newType : stateProduct.type,
             countInStock: stateProduct.countInStock,
             discount: stateProduct.discount,
@@ -517,11 +545,31 @@ const AdminProduct = () => {
             })
         }
 
-       
+       const handleSearchInputChange = (value) => {
+        setSearchKeyword(value);
+        };
+
+        const executeSearch = () => {
+            const filteredData = products?.data?.filter((product) =>
+              product.name.toLowerCase().includes(searchKeyword.toLowerCase())
+            );
+            setFilteredProducts(filteredData);
+          };
+
+          const resetSearch = () => {
+            setSearchKeyword('');
+            setFilteredProducts(products?.data || []);
+          };
+
+          useEffect(() => {
+            if (products?.data) {
+              setFilteredProducts(products.data);
+            }
+          }, [products]);
         
   return (
     <div>
-        <WrapperHeader>Quản lý sản phẩm</WrapperHeader>
+        {/* <WrapperHeader>Quản lý sản phẩm</WrapperHeader>
         <div style={{marginTop: '10px'}}>
             <Button style={{height: '150px', width: '150px', borderRadius: '6px', borderStyle: 'dashed'}} onClick={() => setIsModalOpen(true)}><PlusOutlined style={{fontSize: '60px'}}/></Button>
         </div>
@@ -535,7 +583,33 @@ const AdminProduct = () => {
                     }
                 }}
             />
-        </div>
+        </div> */}
+        <WrapperHeaderContainer>
+        <WrapperHeader>Quản lý sản phẩm</WrapperHeader>
+        <WrapperButtons>
+            <AddButton onClick={() => setIsModalOpen(true)}>
+            <PlusIcon>
+                <PlusOutlined />
+            </PlusIcon>
+            Thêm mới
+            </AddButton>
+        </WrapperButtons>
+        </WrapperHeaderContainer>
+
+
+
+    <WrapperTableContainer>
+      <TableComponent
+        handleDeleteMany={handleDeleteManyProducts}
+        columns={columns}
+        isPending={isPendingProducts}
+        data={dataTable}
+        onRow={(record) => ({
+          onClick: () => setRowSelected(record._id),
+        })}
+      />
+    </WrapperTableContainer>
+
         <ModalComponent forceRender title="Tạo sản phẩm " open={isModalOpen} onCancel={handleCancel} footer={null}>
             <Loading isPending={isPending}>
                 <Form
@@ -850,6 +924,42 @@ const AdminProduct = () => {
                     </WrapperUploadFile>
                 </Form.Item>
 
+                <Form.Item
+  label="Hình ảnh nhỏ"
+  name="subImages"
+  rules={[
+    {
+      required: false,
+      message: 'Please upload sub-images!',
+    },
+  ]}
+>
+  <WrapperUploadFile
+    onChange={handleOnchangeSubImages}
+    multiple
+    maxCount={3} // Giới hạn số lượng hình ảnh nhỏ
+  >
+    <Button icon={<UploadOutlined />}>Upload Sub-Images</Button>
+  </WrapperUploadFile>
+  {stateProduct?.subImages?.length > 0 && (
+    <div style={{ marginTop: '10px', display: 'flex', gap: '10px' }}>
+      {stateProduct.subImages.map((image, index) => (
+        <img
+          key={index}
+          src={image}
+          alt={`subImage-${index}`}
+          style={{
+            height: '60px',
+            width: '60px',
+            borderRadius: '6px',
+            objectFit: 'cover',
+          }}
+        />
+      ))}
+    </div>
+  )}
+</Form.Item>
+
 
 
                 <Form.Item
@@ -859,7 +969,7 @@ const AdminProduct = () => {
                     }}
                 >
                 <Button type="primary" htmlType="submit">
-                    Submit
+                    Xác nhận
                 </Button>
                 </Form.Item>
 
@@ -1010,7 +1120,7 @@ const AdminProduct = () => {
                     ]}
                 >
                     <WrapperUploadFile onChange={handleOnchangeAvatarDetails} maxCount={1}>
-                        <Button icon={<UploadOutlined />}>Select file</Button>
+                        <Button icon={<UploadOutlined />}>Thêm ảnh</Button>
                         {stateProductDetails?.image && (
                         <img src={stateProductDetails?.image} style={{
                             height: '60px',
@@ -1023,6 +1133,43 @@ const AdminProduct = () => {
                     </WrapperUploadFile>
                 </Form.Item>
 
+                <Form.Item
+                    label="Hình ảnh nhỏ"
+                    name="subImages"
+                    rules={[
+                        {
+                        required: false,
+                        message: 'Please upload sub-images!',
+                        },
+                    ]}
+                    >
+                    <WrapperUploadFile
+                        onChange={handleOnchangeSubImages}
+                        multiple
+                        maxCount={3} // Giới hạn số lượng hình ảnh nhỏ
+                    >
+                        <Button icon={<UploadOutlined />}>Thêm ảnh</Button>
+                    </WrapperUploadFile>
+                    {stateProduct?.subImages?.length > 0 && (
+                        <div style={{ marginTop: '10px', display: 'flex', gap: '10px' }}>
+                        {stateProduct.subImages.map((image, index) => (
+                            <img
+                            key={index}
+                            src={image}
+                            alt={`subImage-${index}`}
+                            style={{
+                                height: '60px',
+                                width: '60px',
+                                borderRadius: '6px',
+                                objectFit: 'cover',
+                            }}
+                            />
+                        ))}
+                        </div>
+                    )}
+                    </Form.Item>
+
+
 
 
                 <Form.Item
@@ -1032,7 +1179,7 @@ const AdminProduct = () => {
                     }}
                 >
                 <Button type="primary" htmlType="submit">
-                    Apply
+                    Xác nhận
                 </Button>
                 </Form.Item>
 

@@ -15,6 +15,9 @@ import { useQuery } from '@tanstack/react-query'
 import DrawerComponent from '../DrawerComponent/DrawerComponent'
 import { useSelector } from 'react-redux'
 import ModalComponent from '../ModalComponent/ModalComponent'
+import { Tag } from 'antd';
+
+
 
 
 
@@ -226,14 +229,47 @@ const AdminUser = () => {
           //     text
           //   ),
         });
+
+        const getStatusTag = (status) => {
+          switch (status) {
+            case "pending":
+              return <Tag color="gold">Chờ xử lý</Tag>;
+            case "processing":
+              return <Tag color="blue">Đang xử lý</Tag>;
+            case "delivering":
+              return <Tag color="cyan">Đang giao hàng</Tag>;
+            case "delivered":
+              return <Tag color="green">Đã giao</Tag>;
+            case "cancelled":
+              return <Tag color="red">Đã hủy</Tag>;
+            default:
+              return <Tag color="default">Không rõ</Tag>;
+          }
+        };
   
       const columns = [
-          {
-              title: 'Họ tên',
-              dataIndex: 'name',
-              sorter: (a, b) => a.name.length - b.name.length,
-              ...getColumnSearchProps('name')
-          },
+        {
+          title: 'Họ tên',
+          dataIndex: 'name',
+          sorter: (a, b) => a.name.length - b.name.length,
+          ...getColumnSearchProps('name'),
+          render: (_, record) => (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <img
+                src={record.avatar}
+                alt={record.name}
+                style={{
+                  width: 32,
+                  height: 32,
+                  borderRadius: '50%',
+                  objectFit: 'cover',
+                }}
+              />
+              <span>{record.name}</span>
+            </div>
+          )
+        },
+        
           {
             title: 'Email',
             dataIndex: 'email',
@@ -246,20 +282,24 @@ const AdminUser = () => {
             sorter: (a, b) => a.address.length - b.address.length,
             ...getColumnSearchProps('address')
           },
+          
           {
             title: 'Trạng thái',
             dataIndex: 'isAdmin',
+            render: (isAdmin) =>
+              String(isAdmin) === 'true' ? (
+                <Tag color="volcano">Admin</Tag>
+              ) : (
+                <Tag color="blue">Người dùng</Tag>
+              ),
             filters: [
-              {
-                text: 'Admin',
-                value: true
-              },
-              {
-                text: 'Người dùng',
-                value: false
-              }
-            ]
+              { text: 'Admin', value: 'true' },
+              { text: 'Người dùng', value: 'false' },
+            ],
+            onFilter: (value, record) => String(record.isAdmin) === value,
           },
+          
+          
           {
             title: 'Điện thoại',
             dataIndex: 'phone',

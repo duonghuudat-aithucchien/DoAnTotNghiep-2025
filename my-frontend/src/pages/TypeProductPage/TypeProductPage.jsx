@@ -8,6 +8,7 @@ import * as ProductService from '../../service/ProductService'
 import Loading from '../../components/LoadingComponent/Loading'
 import { useSelector } from 'react-redux'
 import { useDebounce } from '../../hooks/useDebounce'
+import { getFilteredProducts } from '../../service/FilterService'
 
 const { Title } = Typography
 const { Option } = Select
@@ -15,7 +16,7 @@ const { Option } = Select
 const TypeProductPage = () => {
   const searchProduct = useSelector((state) => state?.product?.search)
   const searchDebounce = useDebounce(searchProduct, 500)
-  const { state } = useLocation()
+  const { state: type } = useLocation() // ✅ alias state -> type cho rõ ràng
 
   const [products, setProducts] = useState([])
   const [pending, setPending] = useState(false)
@@ -25,24 +26,49 @@ const TypeProductPage = () => {
     total: 1
   })
 
+  const [activeFilters, setActiveFilters] = useState(null)
+
   const fetchProductType = async (type, page, limit) => {
     setPending(true)
     const res = await ProductService.getProductType(type, page, limit)
     if (res?.status === 'OK') {
-      setPending(false)
       setProducts(res?.data)
-      setPanigate({ ...panigate, total: res?.totalPage })
+      setPanigate(prev => ({ ...prev, total: res?.totalPage }))
+    }
+    setPending(false)
+  }
+
+  const fetchFilteredProducts = async (filters, page, limit) => {
+    setPending(true)
+    const finalFilters = {
+      ...filters,
+      ...(type ? { type } : {}),
+    }
+
+    try {
+      const res = await getFilteredProducts(finalFilters, page, limit, finalFilters.sort || '')
+      if (res?.status === 'OK') {
+        setProducts(res?.data)
+        setPanigate(prev => ({ ...prev, total: res?.totalPage }))
+      }
+    } catch (err) {
+      console.error('Lỗi khi lọc sản phẩm:', err)
+    } finally {
+      setPending(false)
     }
   }
 
   useEffect(() => {
-    if (state) {
-      fetchProductType(state, panigate.page, panigate.limit)
+    if (activeFilters) {
+      fetchFilteredProducts(activeFilters, panigate.page, panigate.limit)
+    } else if (type) {
+      fetchProductType(type, panigate.page, panigate.limit)
     }
-  }, [state, panigate.page, panigate.limit])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [type, panigate.page, panigate.limit, activeFilters])
 
   const onChange = (current, pageSize) => {
-    setPanigate({ ...panigate, page: current - 1, limit: pageSize })
+    setPanigate({ page: current - 1, limit: pageSize })
   }
 
   return (
@@ -52,30 +78,31 @@ const TypeProductPage = () => {
           <Row gutter={[24, 24]}>
             <Col xs={24} md={6} lg={5}>
               <WrapperNavbar>
-                <NavbarComponent />
+                <NavbarComponent setFilters={setActiveFilters} type={type} />
               </WrapperNavbar>
             </Col>
 
             <Col xs={24} md={18} lg={19} style={{ display: 'flex', flexDirection: 'column' }}>
-              {/* Header Row */}
               <WrapperHeader>
-                <Title level={3} style={{ margin: 0 }}>{state || 'Category'}</Title>
+                <Title level={3} style={{ margin: 0 }}>{type || 'Category'}</Title>
                 <WrapperTopBar>
-                  <span>Showing 1-{products.length} of {panigate.total * panigate.limit} Products</span>
-                  <Select defaultValue="Most Popular" size="small">
-                    <Option value="popular">Most Popular</Option>
-                    <Option value="price_low">Price: Low to High</Option>
-                    <Option value="price_high">Price: High to Low</Option>
-                  </Select>
+                  <span>
+                    Hiển thị {products.length} / {panigate.total * panigate.limit} sản phẩm
+                  </span>
+                  {/* <Select defaultValue="Most Popular" size="small" disabled>
+                    <Option value="popular">Phổ biến nhất</Option>
+                    <Option value="price_low">Giá: Từ thấp đến Cao</Option>
+                    <Option value="price_high">Giá: Từ cao đến Thấp</Option>
+                  </Select> */}
                 </WrapperTopBar>
               </WrapperHeader>
 
-              {/* Product Grid */}
               <WrapperProducts>
                 <Row gutter={[16, 24]}>
-                  {products?.filter((pro) => {
-                    return searchDebounce === '' || pro?.name.toLowerCase().includes(searchDebounce.toLowerCase())
-                  }).map((product) => (
+                  {products?.filter((pro) =>
+                    searchDebounce === '' ||
+                    pro?.name.toLowerCase().includes(searchDebounce.toLowerCase())
+                  ).map((product) => (
                     <Col key={product._id} xs={24} sm={12} md={8} lg={6}>
                       <CardComponent
                         countInstock={product.countInstock}
@@ -94,7 +121,6 @@ const TypeProductPage = () => {
                 </Row>
               </WrapperProducts>
 
-              {/* Pagination */}
               <Pagination
                 current={panigate.page + 1}
                 total={panigate.total * panigate.limit}
@@ -111,3 +137,4 @@ const TypeProductPage = () => {
 }
 
 export default TypeProductPage
+

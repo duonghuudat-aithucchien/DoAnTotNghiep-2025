@@ -113,7 +113,7 @@ const SignInPage = () => {
         </WrapperContainerLeft>
         <WrapperContainerRight>
           <Image src={imageLogo} preview={false} alt="image-logo" height="203px" width="203px" />
-          <h4>Mua sắm tại DUONGHUUDAT</h4>
+          <h4 style={{fontSize: '14px'}}>Mua sắm tại Fashion Style</h4>
         </WrapperContainerRight>
       </div>
     </div>
@@ -121,3 +121,4 @@ const SignInPage = () => {
 }
 
 export default SignInPage
+

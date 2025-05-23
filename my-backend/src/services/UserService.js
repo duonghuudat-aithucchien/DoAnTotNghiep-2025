@@ -71,12 +71,12 @@ const loginUser = (userLogin) => {
             //Xac thuc jwt jsonwebtoken
             const access_token = await genneralAccessToken({
                 id: checkUser.id,
-                isAdmin: checkUser.isAdmin
+                isAdmin: checkUser.isAdmin 
             })
 
             const refresh_token = await genneralRefreshToken({
                 id: checkUser.id,
-                isAdmin: checkUser.isAdmin
+                isAdmin: checkUser.isAdmin 
             })
 
             console.log('access_token', access_token)            

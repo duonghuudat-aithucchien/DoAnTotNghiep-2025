@@ -3,6 +3,8 @@ import OrderPage from "../pages/OrderPage/OrderPage";
 import ProductsPage from "../pages/ProductsPage/ProductsPage";
 import NotFoundPage from "../pages/NotFoundPage/NotFoundPage"
 import TypeProductPage from "../pages/TypeProductPage/TypeProductPage";
+import TopSellingPage from "../pages/TypeProductPage/TopSellingPage";
+import TopNewPage from "../pages/TypeProductPage/TopNewPage";
 import SignInPage from "../pages/SignInPage/SignInPage";
 import SignUpPage from "../pages/SignUpPage/SignUpPage";
 import ProductDetailPage from "../pages/ProductDetailPage/ProductDetailPage";
@@ -49,7 +51,7 @@ export const routes = [
         path: '/payment',
         page: PaymentPage,
         isShowHeader: true,
-        // isShowFooter: true
+        isShowFooter: true
 
 
     },
@@ -74,6 +76,18 @@ export const routes = [
         isShowHeader: true,
         isShowFooter: true
 
+    },
+    {
+        path: '/top-selling',
+        page: TopSellingPage,
+        isShowHeader: true,
+        isShowFooter: true
+    },
+    {
+        path: '/top-new',
+        page: TopNewPage,
+        isShowHeader: true,
+        isShowFooter: true
     },
     {
         path: '/sign-in',

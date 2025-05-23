@@ -1,143 +1,13 @@
-// import React, { useEffect, useState } from 'react'
-// import TypeProduct from '../../components/TypeProduct/TypeProduct'
-// import {
-//   WrapperButtonMore,
-//   WrapperProducts,
-//   WrapperTypeProduct,
-//   WrapperSection,
-//   SectionTitle
-// } from './style'
-// import SliderComponent from '../../components/SliderComponent/SliderComponent'
-// import slider1 from '../../assets/images/slider1.webp'
-// import slider2 from '../../assets/images/slider2.webp'
-// import slider3 from '../../assets/images/slider3.webp'
-// import slider4 from '../../assets/images/slider4.svg'
 
-// import CardComponent from '../../components/CardComponent/CardComponent'
-// import * as ProductService from '../../service/ProductService'
-// import { useQuery } from '@tanstack/react-query'
-// import { useSelector } from 'react-redux'
-// import Loading from '../../components/LoadingComponent/Loading'
-// import { useDebounce } from '../../hooks/useDebounce'
-// import { useNavigate } from 'react-router-dom'
-
-
-
-// const HomePage = () => {
-//   const searchProduct = useSelector((state) => state?.product?.search); 
-//   const searchDebounce = useDebounce(searchProduct, 500)
-//   const [loading, setLoading] = useState(false)
-//   const [limit, setLimit] = useState(6)
-//   const [typeProducts, setTypeProducts] = useState([])
-//   const navigate = useNavigate()
-
-//   const fetchProductAll = async (context) => {
-//     const search = context?.queryKey && context?.queryKey[2]
-//     const limit = context?.queryKey && context?.queryKey[1]
-//     const res = await ProductService.getAllProduct(search, limit);
-//       return res
-//   };
-
-//   const fetchAllTypeProduct = async () => {
-//     const res = await ProductService.getAllTypeProduct()
-//     if(res?.status === 'OK') {
-//       setTypeProducts(res?.data)
-//     }
-//   }
-
-//   //const {isPending, data: products} = useQuery(['products'], fetchProductAll, { retry: 3, retryDelay: 1000 })
-//   const { isPending, data: products, isPreviousData } = useQuery({
-//     queryKey: ['product', limit, searchDebounce],
-//     queryFn: fetchProductAll,
-//     retry: 3,
-//     retryDelay: 1000,
-//     keepPreviousData: true
-//   });
-
-//   useEffect(() => {
-//     fetchAllTypeProduct()
-//   }, [])
-
-//   const productQueries = useQuery({
-//     queryKey: ['products-by-type', typeProducts],
-//     queryFn: async () => {
-//       const results = await Promise.all(
-//         typeProducts.map(type => ProductService.getProductByType(type))
-//       );
-//       return typeProducts.reduce((acc, type, index) => {
-//         acc[type] = results[index]?.data || [];
-//         return acc;
-//       }, {});
-//     },
-//     enabled: typeProducts.length > 0,
-//   });
-  
-//   return (
-//     <Loading isPending={isPending || loading}>
-//       <div style={{width: '1270px', margin:'0 auto'}}>
-//         {/* <WrapperTypeProduct>
-//         {typeProducts.map((item) =>{
-//           return (
-//             <TypeProduct name={item} key={item} />
-//           )
-//         })}
-//         </WrapperTypeProduct> */}
-//         </div>
-//         <div className='body' style={{width:'100%', backgroundColor:'#efefef'}}>
-//           <div id="container" style={{height:'1000px', width:'1270px', margin: '0 auto'}}>
-//             <SliderComponent arrImages={[ slider4, slider4, slider4]} />
-//             <WrapperProducts>
-//               {products?.data?.map((product) => {
-//                 return(
-//                   <CardComponent 
-//                   key={product._id} 
-//                   countInstock={product.countInstock} 
-//                   description={product.description} 
-//                   image={product.image} name={product.name} 
-//                   price={product.price} 
-//                   rating={product.rating}
-//                   type={product.type}
-//                   selled={product.selled}
-//                   discount={product.discount}
-//                   id={product._id}
-//                   />
-//                 )
-//               })}
-
-
-
-//             </WrapperProducts>
-//             <div style={{width: '100%', display: 'flex', justifyContent: 'center', marginTop: '10px'}}>
-//               <WrapperButtonMore 
-//                 textButton={isPreviousData ? 'Tải thêm' : 'Xem thêm'} type="outline" styleButton={{
-//                 border: '1px solid rgb(11,116,229)',
-//                 color: `${products?.total === products?.data?.length ? '#ccc': 'rgb(11,116,229)'}`,
-//                 width: '240px',
-//                 height: '38px',
-//                 borderRadius: '4px'
-//               }}
-//               disabled={products?.total === products?.data?.length || products.totalPage === 1}
-//               styleTextButton={{fontWeight: '500', color: products?.total === products?.data?.length && '#fff'}}
-//               onClick={() => setLimit((prev) => prev + 6)}
-//               />
-//             </div>
-            
-//           </div>
-//         </div>
-//       </Loading>
-//   )
-// }
-
-// export default HomePage
-
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, Suspense } from 'react'
 import TypeProduct from '../../components/TypeProduct/TypeProduct'
 import {
   WrapperButtonMore,
   WrapperProducts,
   WrapperTypeProduct,
   WrapperSection,
-  SectionTitle
+  SectionTitle,
+  ArrowButton
 } from './style'
 import SliderComponent from '../../components/SliderComponent/SliderComponent'
 import slider4 from '../../assets/images/slider4.svg'
@@ -150,6 +20,11 @@ import Loading from '../../components/LoadingComponent/Loading'
 import { useDebounce } from '../../hooks/useDebounce'
 import { useNavigate } from 'react-router-dom'
 import ButtonComponent from '../../components/ButtonComponent/ButtonComponent'
+import ProductScrollWithArrows from './ProductScrollWithArrows';
+import FlashSaleCountdown from './FlashSaleCountdown';
+
+const FlashSaleCountdown1 = React.lazy(() => import('./FlashSaleCountdown'));
+
 
 const HomePage = () => {
   const searchProduct = useSelector((state) => state?.product?.search)
@@ -165,15 +40,39 @@ const HomePage = () => {
   const [searchAllLoaded, setSearchAllLoaded] = useState(false)
   const [fetchKey, setFetchKey] = useState(0) // Trigger reload products
   const [loading, setLoading] = useState(false)
+  const [topSelling, setTopSelling] = useState([])
+  const [topNew, setTopNew] = useState([])
+  const [topSellingLimit, setTopSellingLimit] = useState(5)
+  const [topNewLimit, setTopNewLimit] = useState(5)
+  const [flashSaleProducts, setFlashSaleProducts] = useState([]);
+
+
 
   const fetchProductAll = async ({ queryKey }) => {
     const [, , search] = queryKey
-    console.log('🔍 fetchProductAll search:', search)
-    if (!search) return Promise.resolve({ data: [] }) // Fix here
+    if (!search) return Promise.resolve({ data: [] })
     return await ProductService.getAllProduct(search, 9999)
   }
   
+  useEffect(() => {
+    const fetchTopData = async () => {
+      const [sellingRes, newRes] = await Promise.all([
+        ProductService.getTopSellingProducts(8),
+        ProductService.getTopNewProducts(8)
+      ])
+      setTopSelling(sellingRes?.data || [])
+      setTopNew(newRes?.data || [])
+    }
+    fetchTopData()
+  }, [])
   
+  useEffect(() => {
+    const fetchFlashSale = async () => {
+      const res = await ProductService.getTopSellingProducts(8); 
+      setFlashSaleProducts(res?.data || []);
+    };
+    fetchFlashSale();
+  }, []);
 
   const fetchAllTypeProduct = async () => {
     const res = await ProductService.getAllTypeProduct()
@@ -260,19 +159,39 @@ const HomePage = () => {
       setSearchAllLoaded(newLimit >= searchData.data.length)
     }
   }
-  // console.log('searchDebounce:', searchDebounce)
-  // console.log('isPending:', isPending)
-  // console.log('isFetching:', isFetching)
-  // console.log('searchData:', searchData)
+
   
   return (
     <Loading isPending={(!!searchDebounce && (isPending || isFetching)) || Object.values(loadingTypes).some(v => v)}>
       <div style={{ width: '1270px', margin: '0 auto' }}></div>
-      <div className='body' style={{ width: '100%', backgroundColor: '#efefef' }}>
+      <div className='body' style={{ width: '100%', backgroundColor: '#fff' }}>
         <div id="container" style={{ paddingBottom: '60px', width: '1270px', margin: '0 auto' }}>
           <SliderComponent arrImages={[slider4, slider4, slider4]} />
+         <WrapperSection>
+            <SectionTitle>FLASH SALE</SectionTitle>
+            {/* Sử dụng Suspense để bọc FlashSaleCountdown */}
+            <Suspense fallback={<div>Đang tải Flash Sale...</div>}>
+              <FlashSaleCountdown1 endTime="2025-05-18T23:59:59" />
+            </Suspense>
+            <ProductScrollWithArrows>
+              {flashSaleProducts.map(product => (
+                <CardComponent
+                  countInstock={product.countInstock}
+                  description={product.description}
+                  image={product.image}
+                  name={product.name}
+                  price={product.price}
+                  rating={product.rating}
+                  type={product.type}
+                  selled={product.selled}
+                  discount={product.discount}
+                  id={product._id}
+                />
+              ))}
+            </ProductScrollWithArrows>
+          </WrapperSection>
 
-          {searchDebounce ? (
+          {/* {searchDebounce ? (
             <WrapperSection>
               <SectionTitle>KẾT QUẢ TÌM KIẾM</SectionTitle>
               <WrapperProducts>
@@ -370,7 +289,78 @@ const HomePage = () => {
                 })
               )}
             </>
-          )}
+          )} */}
+
+        {searchDebounce ? (
+          <WrapperSection>
+            <SectionTitle>KẾT QUẢ TÌM KIẾM</SectionTitle>
+            <WrapperProducts>
+              {searchResults.map(product => (
+                <CardComponent 
+                  countInstock={product.countInstock}
+                  description={product.description}
+                  image={product.image}
+                  name={product.name}
+                  price={product.price}
+                  rating={product.rating}
+                  type={product.type}
+                  selled={product.selled}
+                  discount={product.discount}
+                  id={product._id}
+                />
+              ))}
+            </WrapperProducts>
+            {!searchAllLoaded && (
+              <div style={{ textAlign: 'center', marginTop: 20 }}>
+                <WrapperButtonMore textButton="Xem thêm" type="outline" onClick={handleShowMoreSearch} />
+              </div>
+            )}
+          </WrapperSection>
+        ) : (
+          <>
+        <WrapperSection>
+          <SectionTitle>SẢN PHẨM MỚI</SectionTitle>
+          <ProductScrollWithArrows>
+            {topNew.map(product => (
+              <CardComponent 
+              countInstock={product.countInstock}
+              description={product.description}
+              image={product.image}
+              name={product.name}
+              price={product.price}
+              rating={product.rating}
+              type={product.type}
+              selled={product.selled}
+              discount={product.discount}
+              id={product._id}
+            />
+            ))}
+          </ProductScrollWithArrows>
+        </WrapperSection>
+
+        <WrapperSection>
+          <SectionTitle>TOP BÁN CHẠY</SectionTitle>
+          <ProductScrollWithArrows>
+            {topSelling.map(product => (
+              <CardComponent 
+              countInstock={product.countInstock}
+              description={product.description}
+              image={product.image}
+              name={product.name}
+              price={product.price}
+              rating={product.rating}
+              type={product.type}
+              selled={product.selled}
+              discount={product.discount}
+              id={product._id}
+            />
+            ))}
+          </ProductScrollWithArrows>
+        </WrapperSection>
+
+          </>
+        )}
+
         </div>
       </div>
     </Loading>
@@ -378,3 +368,5 @@ const HomePage = () => {
 }
 
 export default HomePage
+
+

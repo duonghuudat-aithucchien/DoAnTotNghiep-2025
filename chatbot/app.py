@@ -1,121 +1,3 @@
-# import random
-# import json
-# import pickle
-# import numpy as np
-# import tensorflow as tf
-# import nltk
-# from nltk.stem import WordNetLemmatizer
-# from flask import Flask, render_template, request, jsonify
-# from flask_cors import CORS  # Thêm CORS để tránh lỗi Cross-Origin Request
-
-# # Khởi tạo Flask app
-# app = Flask(__name__)
-# CORS(app)  # Cho phép tất cả các nguồn truy cập API
-
-# # Đảm bảo tài nguyên của nltk đã được tải xuống
-# nltk.download("punkt")
-# nltk.download("wordnet")
-
-# # Khởi tạo lemmatizer để chuẩn hóa từ
-# lemmatizer = WordNetLemmatizer()
-
-# # Load dữ liệu intents từ file JSON
-# intents = json.loads(open('chatbot/intents.json', encoding="utf8").read())
-
-# # Load danh sách từ (words) và danh sách intent (classes) đã lưu trước đó
-# words = pickle.load(open('chatbot/words.pkl', 'rb'))
-# classes = pickle.load(open('chatbot/classes.pkl', 'rb'))
-
-# # Load mô hình đã huấn luyện
-# model = tf.keras.models.load_model('chatbot/chatbot_model.h5')
-
-# def clean_up_sentence(sentence):
-#     """
-#     Tiền xử lý câu nhập từ người dùng:
-#     - Tokenize thành danh sách từ
-#     - Lemmatization để chuẩn hóa từ về dạng gốc
-#     """
-#     sentence_words = nltk.word_tokenize(sentence)
-#     sentence_words = [lemmatizer.lemmatize(word.lower()) for word in sentence_words]
-#     return sentence_words
-
-# def bag_of_words(sentence):
-#     """
-#     Chuyển câu nhập từ người dùng thành vector Bag of Words (BOW):
-#     - Nếu từ có trong danh sách words, gán giá trị 1, ngược lại gán 0
-#     """
-#     sentence_words = clean_up_sentence(sentence)
-#     bag = [0] * len(words)
-#     for s in sentence_words:
-#         for i, w in enumerate(words):
-#             if w == s:
-#                 bag[i] = 1
-#     return np.array(bag)
-
-# def predict_class(sentence):
-#     """
-#     Dự đoán intent của câu nhập vào bằng cách:
-#     - Chuyển câu thành vector BOW
-#     - Dự đoán xác suất intent từ mô hình
-#     - Chỉ giữ lại những intent có xác suất lớn hơn ngưỡng ERROR_THRESHOLD
-#     """
-#     bow = bag_of_words(sentence)
-#     res = model.predict(np.array([bow]))[0]
-#     ERROR_THRESHOLD = 0.25  # Chỉ giữ lại các intent có độ tin cậy trên 25%
-#     results = [[i, r] for i, r in enumerate(res) if r > ERROR_THRESHOLD]
-#     results.sort(key=lambda x: x[1], reverse=True)  # Sắp xếp theo xác suất giảm dần
-#     return [{"intent": classes[r[0]], "probability": str(r[1])} for r in results]
-
-# def get_response(intents_list, intents_json):
-#     """
-#     Chọn câu trả lời dựa trên intent dự đoán:
-#     - Lấy intent có xác suất cao nhất
-#     - Tìm trong file intents.json câu trả lời tương ứng
-#     """
-#     if not intents_list:
-#         return "Xin lỗi, tôi không hiểu."
-    
-#     tag = intents_list[0]['intent']
-#     for i in intents_json['intents']:
-#         if i['tag'] == tag:
-#             return random.choice(i['responses'])
-#     return "Xin lỗi, tôi không hiểu."
-
-# @app.route("/")
-# def home():
-#     """Trang chủ hiển thị giao diện chatbot"""
-#     return render_template("index.html")
-
-# @app.route("/get", methods=["POST"])
-# def chatbot_response():
-#     """
-#     API nhận tin nhắn từ người dùng, xử lý và trả về phản hồi:
-#     - Lấy tin nhắn từ request JSON
-#     - Dự đoán intent
-#     - Trả về câu trả lời phù hợp
-#     """
-#     try:
-#         data = request.get_json()
-#         user_message = data.get("message", "").strip()
-
-#         if not user_message:
-#             return jsonify({"response": "Xin hãy nhập nội dung tin nhắn."})
-
-#         predicted_intents = predict_class(user_message)
-#         bot_response = get_response(predicted_intents, intents)
-
-#         return jsonify({"response": bot_response})
-
-#     except Exception as e:
-#         print(f"Lỗi xử lý chatbot: {e}")
-#         return jsonify({"response": "Xin lỗi, chatbot đang gặp sự cố."})
-
-# if __name__ == "__main__":
-#     app.run(debug=True)
-
-
-
-
 import os
 from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
@@ -123,28 +5,48 @@ import requests
 from dotenv import load_dotenv
 from pymongo import MongoClient
 
-# Load biến môi trường
+from sentence_transformers import SentenceTransformer
+import faiss
+import numpy as np
+
+
 load_dotenv()
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY", "YOUR_GOOGLE_API_KEY")
 MONGO_URI = os.getenv("MONGO_URI", "YOUR_MONGO_URI")
 
-# Kết nối MongoDB
+
 mongo_client = MongoClient(MONGO_URI)
 db = mongo_client["test"]
 products_collection = db["products"]
 
-# Khởi tạo Flask app
+
 app = Flask(__name__)
 CORS(app)
+
+# Tải mô hình BERT và khởi tạo FAISS index
+bert_model = SentenceTransformer("all-MiniLM-L6-v2")
+dimension = 384  # embedding size của all-MiniLM-L6-v2
+faiss_index = faiss.IndexFlatL2(dimension)
+product_embeddings = []
+product_data = []
+
+def build_faiss_index():
+    global product_embeddings, product_data
+    products = list(products_collection.find({}))
+    texts = [f"{p.get('name', '')} {p.get('type', '')} {p.get('description', '')}" for p in products]
+    embeddings = bert_model.encode(texts, convert_to_numpy=True)
+    product_embeddings = embeddings
+    product_data = products
+    faiss_index.add(embeddings)
+
+build_faiss_index()
 
 # Hàm gọi Gemini API
 def call_gemini_api(prompt, model="models/gemini-1.5-flash"):
     url = f"https://generativelanguage.googleapis.com/v1beta/{model}:generateContent"
     headers = {"Content-Type": "application/json"}
     payload = {
-        "contents": [
-            {"role": "user", "parts": [{"text": prompt}]}
-        ]
+        "contents": [{"role": "user", "parts": [{"text": prompt}]}]
     }
     params = {"key": GOOGLE_API_KEY}
 
@@ -158,28 +60,25 @@ def call_gemini_api(prompt, model="models/gemini-1.5-flash"):
         print("Gemini API error:", e)
         return None
 
-# Truy xuất sản phẩm phù hợp
-def find_products_by_keywords(keywords):
-    query = {
-        "$or": [
-            {"name": {"$regex": keywords, "$options": "i"}},
-            {"type": {"$regex": keywords, "$options": "i"}},
-            {"description": {"$regex": keywords, "$options": "i"}}
-        ]
-    }
-    products = products_collection.find(query).limit(5)
-    return [
-        {
-            "name": p.get("name"),
-            "price": p.get("price"),
-            "image": p.get("image"),
-            "rating": p.get("rating"),
-            "discount": p.get("discount"),
-            "countInStock": p.get("countInStock"),
-            "description": p.get("description")
-        }
-        for p in products
-    ]
+# Truy xuất sản phẩm bằng semantic search (FAISS + BERT)
+def find_products_by_semantic_search(query, top_k=5):
+    query_vec = bert_model.encode([query], convert_to_numpy=True)
+    distances, indices = faiss_index.search(query_vec, top_k)
+
+    results = []
+    for idx in indices[0]:
+        if idx < len(product_data):
+            p = product_data[idx]
+            results.append({
+                "name": p.get("name"),
+                "price": p.get("price"),
+                "image": p.get("image"),
+                "rating": p.get("rating"),
+                "discount": p.get("discount"),
+                "countInStock": p.get("countInStock"),
+                "description": p.get("description")
+            })
+    return results
 
 # Route giao diện chatbot
 @app.route("/")
@@ -198,13 +97,17 @@ def chatbot_response():
 
         # Xác định intent
         intent_check = call_gemini_api(
-            f"Người dùng hỏi: \"{user_message}\". Đây có phải câu hỏi tìm sản phẩm thời trang không? Trả lời ngắn: 'yes' hoặc 'no'."
+            f"""
+            Người dùng hỏi: "{user_message}".
+            Đây có phải là câu hỏi liên quan đến tìm kiếm sản phẩm thời trang không?
+            Trả lời ngắn gọn: 'yes' hoặc 'no'.
+            """
         )
         if not intent_check:
             return jsonify({"response": "Có lỗi khi kiểm tra nội dung. Thử lại sau nhé!"})
 
         if "yes" in intent_check.get("text", "").lower():
-            products = find_products_by_keywords(user_message)
+            products = find_products_by_semantic_search(user_message)
 
             if not products:
                 return jsonify({"response": "Xin lỗi, hiện tại chưa có sản phẩm phù hợp với yêu cầu của bạn 😥."})
@@ -225,12 +128,13 @@ def chatbot_response():
                 {formatted_products}
 
                 Hãy:
-                1. Gợi ý 2–3 mẫu nổi bật phù hợp với nhu cầu.
+                1. Gợi ý 2–3 mẫu nổi bật phù hợp với nhu cầu của khách.
                 2. Viết nội dung tư vấn ngắn gọn (3–5 dòng), thân thiện, có emoji nhẹ nhàng.
-                3. Tránh văn phong máy móc (như "dữ liệu", "truy vấn"), hãy viết như đang chat thật với khách hàng.
+                3. Đưa ra lý do tại sao sản phẩm phù hợp (ví dụ: phù hợp với mùa, phong cách, hoặc giá cả hợp lý).
+                4. Tránh văn phong máy móc (như "dữ liệu", "truy vấn"), hãy viết như đang chat thật với khách hàng.
 
                 Chỉ trả lời phần tư vấn, không cần lặp lại danh sách sản phẩm.
-                            """
+            """
 
             response = call_gemini_api(prompt)
             if not response:
@@ -250,3 +154,5 @@ def chatbot_response():
 
 if __name__ == "__main__":
     app.run(debug=True)
+
+

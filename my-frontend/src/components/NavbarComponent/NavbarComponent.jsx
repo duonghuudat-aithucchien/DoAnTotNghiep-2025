@@ -1,175 +1,206 @@
-import React, { useState } from 'react'
-import { Checkbox, Rate } from 'antd'
-import { getFilteredProducts } from  '../../service/FilterService'
+import React, { useState, useEffect } from 'react';
+import { Checkbox, Rate } from 'antd';
+import { getFilteredProducts } from '../../service/FilterService';
 import {
   WrapperContainer,
   WrapperFilterTitle,
   WrapperSection,
-  WrapperContent,
   WrapperLableText,
-  WrapperTextValue,
-  WrapperTextPrice,
   ColorCircle,
-  ApplyButton
-} from './style'
+  ApplyButton,
+} from './style';
 
-const NavbarComponent = () => {
-  const [filters, setFilters] = useState({
+const NavbarComponent = ({ setFilters, type }) => {
+  const [filters, setLocalFilters] = useState({
     sizes: [],
     colors: [],
-    price: [],
-    rating: null,
-    type: '',
-  })
+    rating: [],
+    sort: '',
+  });
 
-  const onChange = (checkedValues) => {
-    setFilters((prev) => ({ ...prev, sizes: checkedValues }))
-  }
+  const [availableFilters, setAvailableFilters] = useState({
+    sizes: [],
+    colors: [],
+  });
+
+  useEffect(() => {
+    const fetchFilters = async () => {
+      try {
+        const res = await getFilteredProducts({ type }, 0, 1, '');
+        console.log('filtersAvailable:', res.filtersAvailable);
+        if (res.filtersAvailable) {
+          setAvailableFilters(res.filtersAvailable);
+        }
+      } catch (err) {
+        console.error('Error fetching filters:', err);
+      }
+    };
+
+    if (type) fetchFilters();
+  }, [type]);
+
+  const handleSizeChange = (checkedValues) => {
+    setLocalFilters((prev) => ({ ...prev, sizes: checkedValues }));
+  };
 
   const handleColorClick = (color) => {
-    setFilters((prev) => {
-      const exists = prev.colors.includes(color)
+    setLocalFilters((prev) => {
+      const exists = prev.colors.includes(color);
       return {
         ...prev,
-        colors: exists ? prev.colors.filter(c => c !== color) : [...prev.colors, color]
-      }
-    })
-  }
+        colors: exists ? prev.colors.filter((c) => c !== color) : [...prev.colors, color],
+      };
+    });
+  };
 
-  const handlePriceClick = (priceRangeStr) => {
-    const [min, max] = priceRangeStr.replace(/\$/g, '').split('-').map(v => parseInt(v))
-    setFilters((prev) => ({ ...prev, price: [min, max] }))
-  }
+  const handleRatingChange = (checkedValues) => {
+    setLocalFilters((prev) => ({ ...prev, rating: checkedValues }));
+  };
 
-  const handleRatingClick = (rating) => {
-    setFilters((prev) => ({ ...prev, rating }))
-  }
+  const handleApplyFilter = () => {
+    const sortValue =
+      filters.sort === 'price_asc'
+        ? 'asc'
+        : filters.sort === 'price_desc'
+        ? 'desc'
+        : '';
 
-  const handleCategoryClick = (category) => {
-    setFilters((prev) => ({ ...prev, type: category }))
-  }
+    const payload = {
+      type, // ✅ giữ lại type khi lọc
+      sizes: filters.sizes,
+      colors: filters.colors,
+      sort: sortValue,
+      ...(filters.rating.length > 0 && { rating: Math.min(...filters.rating) }),
+    };
 
-  const handleApplyFilter = async () => {
-    try {
-      const res = await getFilteredProducts(filters, 0, 12, '')
-      console.log('Filtered products:', res)
-      // TODO: handle filtered result, e.g., update product list in parent component
-    } catch (err) {
-      console.error('Filter failed:', err)
-    }
-  }
+    setFilters(payload);
+  };
 
-  const renderContent = (type, options) => {
-    switch (type) {
-      case 'text':
-        return options.map((option, idx) => (
-          <WrapperTextValue
-            key={idx}
-            onClick={() => handleCategoryClick(option)}
-            style={{ cursor: 'pointer', fontWeight: filters.type === option ? 'bold' : 'normal' }}
-          >
-            {option}
-          </WrapperTextValue>
-        ))
+  const renderSizeCheckboxes = () => (
+    <Checkbox.Group
+      style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}
+      value={filters.sizes}
+      onChange={handleSizeChange}
+    >
+      {availableFilters.sizes.map((size) => (
+        <Checkbox key={size} value={size}>{size}</Checkbox>
+      ))}
+    </Checkbox.Group>
+  );
 
-      case 'checkbox':
-        return (
-          <Checkbox.Group
-            style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '12px' }}
-            onChange={onChange}
-          >
-            {options.map((option, idx) => (
-              <Checkbox key={idx} value={option.value}>{option.lable}</Checkbox>
-            ))}
-          </Checkbox.Group>
-        )
+  const renderColorCircles = () => (
+    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
+      {availableFilters.colors.map((color) => (
+        <ColorCircle
+          key={color}
+          color={color}
+          onClick={() => handleColorClick(color)}
+          style={{
+            cursor: 'pointer',
+            border: filters.colors.includes(color) ? '2px solid #000' : 'none',
+          }}
+        />
+      ))}
+    </div>
+  );
 
-      case 'start':
-        return options.map((option, idx) => (
-          <div
-            key={idx}
-            style={{ display: 'flex', gap: '4px', cursor: 'pointer' }}
-            onClick={() => handleRatingClick(option)}
-          >
-            <Rate style={{ fontSize: '12px' }} disabled defaultValue={option} />
-            <span>{`từ ${option} sao`}</span>
-          </div>
-        ))
-
-      case 'price':
-        return options.map((option, idx) => (
-          <WrapperTextPrice
-            key={idx}
-            onClick={() => handlePriceClick(option)}
-            style={{ cursor: 'pointer' }}
-          >
-            {option}
-          </WrapperTextPrice>
-        ))
-
-      case 'colors':
-        return (
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
-            {options.map((color, idx) => (
-              <ColorCircle
-                key={idx}
-                color={color}
-                onClick={() => handleColorClick(color)}
-                style={{
-                  cursor: 'pointer',
-                  border: filters.colors.includes(color) ? '2px solid #000' : 'none'
-                }}
-              />
-            ))}
-          </div>
-        )
-
-      default:
-        return null
-    }
-  }
-
+  // const renderRatingCheckboxes = () => (
+  //   <Checkbox.Group
+  //     style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}
+  //     value={filters.rating}
+  //     onChange={handleRatingChange}
+  //   >
+  //     {[5, 4, 3, 2, 1].map((rating) => (
+  //       <Checkbox key={rating} value={rating}>
+  //         <Rate style={{ fontSize: '12px' }} disabled defaultValue={rating} />
+  //         {rating === 5 ? ' 5 sao' : ` Từ ${rating} sao`}
+  //       </Checkbox>
+  //     ))}
+  //   </Checkbox.Group>
+  // );
+  const renderRatingCheckboxes = () => (
+    <Checkbox.Group
+      style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}
+      value={filters.rating}
+      onChange={handleRatingChange}
+    >
+      {[5, 4, 3, 2, 1].map((rating) => (
+        <Checkbox
+          key={rating}
+          value={rating}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '4px 8px',
+            borderRadius: '6px',
+            transition: 'background 0.2s',
+            background: filters.rating.includes(rating) ? '#f0f0f0' : 'transparent',
+          }}
+        >
+          <Rate
+            disabled
+            defaultValue={rating}
+            style={{ fontSize: '14px', color: '#faad14' }}
+          />
+          <span style={{ fontSize: '13px' }}>
+            {rating === 5 ? '5 sao' : `Từ ${rating} sao`}
+          </span>
+        </Checkbox>
+      ))}
+    </Checkbox.Group>
+  );
+  
+  
   return (
     <WrapperContainer>
-      <WrapperFilterTitle>Filters</WrapperFilterTitle>
+      <WrapperFilterTitle>Bộ lọc</WrapperFilterTitle>
 
       <WrapperSection>
-        <WrapperLableText>Categories</WrapperLableText>
-        <WrapperContent>
-          {renderContent('text', ['T-shirts', 'Shorts', 'Shirts', 'Hoodie', 'Jeans'])}
-        </WrapperContent>
+        <WrapperLableText>Sắp xếp theo giá</WrapperLableText>
+        <select
+          value={filters.sort}
+          onChange={(e) => setLocalFilters((prev) => ({ ...prev, sort: e.target.value }))}
+          style={{ padding: '4px 8px' }}
+        >
+          <option value="">Mặc định</option>
+          <option value="price_asc">Giá từ thấp đến cao</option>
+          <option value="price_desc">Giá từ cao đến thấp</option>
+        </select>
       </WrapperSection>
 
       <WrapperSection>
-        <WrapperLableText>Price</WrapperLableText>
-        {renderContent('price', ['$50 - $100', '$100 - $200'])}
-      </WrapperSection>
-
-      <WrapperSection>
-        <WrapperLableText>Colors</WrapperLableText>
-        {renderContent('colors', ['#f00', '#ff0', '#0f0', '#0ff', '#00f', '#800080', '#fff', '#000'])}
+        <WrapperLableText>Màu sắc</WrapperLableText>
+        {renderColorCircles()}
       </WrapperSection>
 
       <WrapperSection>
         <WrapperLableText>Size</WrapperLableText>
-        {renderContent('checkbox', [
-          { lable: 'XX-Small', value: 'XXS' },
-          { lable: 'X-Small', value: 'XS' },
-          { lable: 'Small', value: 'S' },
-          { lable: 'Medium', value: 'M' },
-          { lable: 'Large', value: 'L' },
-          { lable: 'X-Large', value: 'XL' },
-        ])}
+        {renderSizeCheckboxes()}
       </WrapperSection>
 
       <WrapperSection>
-        <WrapperLableText>Dress Style</WrapperLableText>
-        {renderContent('text', ['Casual', 'Formal', 'Party', 'Gym'])}
+        <WrapperLableText>Đánh giá</WrapperLableText>
+        {renderRatingCheckboxes()}
       </WrapperSection>
 
-      <ApplyButton onClick={handleApplyFilter}>Apply Filter</ApplyButton>
+      <ApplyButton onClick={handleApplyFilter}>Áp dụng</ApplyButton>
+      <ApplyButton
+        onClick={() => {
+          setLocalFilters({
+            sizes: [],
+            colors: [],
+            rating: [],
+            sort: '',
+          });
+          setFilters({type});
+        }}
+        style={{ marginTop: '10px', backgroundColor: '#ccc', color: '#000' }}
+      >
+        Đặt lại bộ lọc
+      </ApplyButton>
     </WrapperContainer>
-  )
-}
+  );
+};
 
-export default NavbarComponent
+export default NavbarComponent;

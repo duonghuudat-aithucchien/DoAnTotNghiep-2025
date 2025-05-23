@@ -111,4 +111,33 @@ export const convertDataChartByProduct = (data) => {
     }
   };
   
+  export const convertDataChartFullByProductType = (orders) => {
+    const typeMap = {};
+  
+    orders?.forEach((order) => {
+      order?.orderItems?.forEach((item) => {
+        const type = item?.type || 'Khác';
+        const quantity = item?.amount || 0;
+        const price = item?.price || 0;
+        const discount = item?.discount || 0;
+  
+        const revenue = (price - discount) * quantity;
+  
+        if (!typeMap[type]) {
+          typeMap[type] = { quantity: 0, revenue: 0 };
+        }
+  
+        typeMap[type].quantity += quantity;
+        typeMap[type].revenue += revenue;
+      });
+    });
+  
+    return Object.entries(typeMap).map(([type, { quantity, revenue }]) => ({
+      name: type,
+      quantity,
+      revenue,
+    }));
+  };
+  
+  
   

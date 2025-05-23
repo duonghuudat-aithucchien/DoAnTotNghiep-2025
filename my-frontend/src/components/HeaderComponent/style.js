@@ -43,6 +43,9 @@
 import styled from 'styled-components';
 
 export const WrapperHeader = styled.div`
+  position: sticky; /* hoặc dùng fixed nếu muốn header nổi hoàn toàn */
+  top: 0;
+  z-index: 1000;
   width: 100%;
   padding: 16px 40px;
   background-color: #fff;
@@ -51,6 +54,7 @@ export const WrapperHeader = styled.div`
   align-items: center;
   gap: 12px;
   flex-wrap: wrap;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05); /* tạo hiệu ứng đổ bóng khi cuộn */
 
   @media (max-width: 768px) {
     flex-direction: column;

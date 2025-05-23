@@ -16,7 +16,8 @@ import * as message from '../../components/Message/Message'
 import { updateUser } from '../../redux/slides/userSlide';
 import { useNavigate } from 'react-router-dom';
 import StepComponent from '../../components/StepComponent/StepComponent';
-
+import { addNotification } from '../../redux/slides/notificationSlice';
+import { resetOrder } from '../../redux/slides/orderSlide';
 
 const OrderPage = () => {
   const order = useSelector((state) => state.order)
@@ -32,6 +33,17 @@ const OrderPage = () => {
   })
   const navigate = useNavigate()
   const [form] = Form.useForm()
+  const isSuccessOrder = useSelector((state) => state.order.isSuccessOrder);
+  const userInfo = useSelector((state) => state.user);
+
+  useEffect(() => {
+    if (isSuccessOrder && userInfo?.name && userInfo?.email) {
+      const message = `🛒 Bạn có một đơn hàng mới từ người dùng ${userInfo.name} (${userInfo.email}), hãy mau chóng xác nhận đơn hàng!`;
+      dispatch(addNotification(message));
+      dispatch(resetOrder());
+    }
+  }, [isSuccessOrder, userInfo, dispatch]);
+
 
   const handleRedirectProductDetail = (id) => {
     navigate(`/product-details/${id}`);

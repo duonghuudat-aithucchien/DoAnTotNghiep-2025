@@ -1,45 +1,85 @@
 const Product = require("../models/ProductModel")
 const bcrypt = require("bcrypt")
+const mongoose = require('mongoose');
+
+// const createProduct = (newProduct) => {
+//     return new Promise(async (resolve, reject) => {
+//         const { name, image, type, price, countInStock, rating, description, discount, sizes, colors} = newProduct
+
+//         try {
+//             const checkProduct = await Product.findOne({
+//                 name: name
+//             })
+//            if(checkProduct !== null) {
+//                 resolve({
+//                     status: 'OK',
+//                     message: 'The name of product is already'
+//                 })
+//            }
+           
+//             const newProduct = await Product.create({
+//                 name, 
+//                 image, 
+//                 type, 
+//                 price,
+//                 countInStock: Number(countInStock), 
+//                 rating, 
+//                 description,
+//                 discount: Number(discount),
+//                 sizes,
+//                 colors
+//             })
+//             if(newProduct) {
+//                 resolve({
+//                     status: 'OK',
+//                     message: 'SUCCESS',
+//                     data: newProduct
+//                 })
+//             }
+//         } catch (e) {
+//             reject(e)
+//         }
+//     })
+// }
 
 const createProduct = (newProduct) => {
     return new Promise(async (resolve, reject) => {
-        const { name, image, type, price, countInStock, rating, description, discount, sizes, colors} = newProduct
+        const { name, image, type, price, countInStock, rating, description, discount, sizes, colors, subImages } = newProduct
 
         try {
-            const checkProduct = await Product.findOne({
-                name: name
-            })
-           if(checkProduct !== null) {
-                resolve({
+            const checkProduct = await Product.findOne({ name })
+            if (checkProduct !== null) {
+                return resolve({
                     status: 'OK',
                     message: 'The name of product is already'
                 })
-           }
-           
-            const newProduct = await Product.create({
-                name, 
-                image, 
-                type, 
+            }
+
+            const createdProduct = await Product.create({
+                name,
+                image,
+                subImages: subImages || [],
+                type,
                 price,
-                countInStock: Number(countInStock), 
-                rating, 
+                countInStock: Number(countInStock),
+                rating,
                 description,
                 discount: Number(discount),
                 sizes,
                 colors
             })
-            if(newProduct) {
-                resolve({
-                    status: 'OK',
-                    message: 'SUCCESS',
-                    data: newProduct
-                })
-            }
+
+            resolve({
+                status: 'OK',
+                message: 'SUCCESS',
+                data: createdProduct
+            })
         } catch (e) {
             reject(e)
         }
     })
 }
+
 
 const updateProduct = (id, data) => {
     return new Promise(async (resolve, reject) => {
@@ -292,6 +332,169 @@ const getProductByType = (type, limit = 6) => {
     })
   }
   
+  const getTopSellingProducts = (limit = 5) => {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const products = await Product.find().sort({ selled: -1 }).limit(limit);
+        resolve({
+          status: 'OK',
+          message: 'SUCCESS',
+          data: products,
+        });
+      } catch (e) {
+        reject({
+          status: 'ERR',
+          message: e.message,
+        });
+      }
+    });
+  };
+  
+  const getTopNewProducts = (limit = 5) => {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const products = await Product.find().sort({ createdAt: -1 }).limit(limit);
+        resolve({
+          status: 'OK',
+          message: 'SUCCESS',
+          data: products,
+        });
+      } catch (e) {
+        reject({
+          status: 'ERR',
+          message: e.message,
+        });
+      }
+    });
+  };
+
+const addReview = (productId, userId, rating, comment) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            console.log('Processing review:', { productId, userId, rating, comment });
+            if (!productId || !userId) {
+                return reject({
+                    status: 'ERR',
+                    message: 'Product ID or User ID is missing',
+                });
+            }
+            if (!mongoose.isValidObjectId(productId) || !mongoose.isValidObjectId(userId)) {
+                return reject({
+                    status: 'ERR',
+                    message: 'Invalid product or user ID',
+                });
+            }
+
+            if (!rating || rating < 1 || rating > 5) {
+                return reject({
+                    status: 'ERR',
+                    message: 'Rating must be between 1 and 5',
+                });
+            }
+            if (!comment || comment.trim() === '') {
+                return reject({
+                    status: 'ERR',
+                    message: 'Comment cannot be empty',
+                });
+            }
+
+            const product = await Product.findById(productId);
+            if (!product) {
+                console.error('Product not found:', { productId });
+                return reject({
+                    status: 'ERR',
+                    message: 'Product not found',
+                });
+            }
+
+            const existingReview = product.reviews.find(
+                (review) => review.user.toString() === userId.toString()
+            );
+            if (existingReview) {
+                return reject({
+                    status: 'ERR',
+                    message: 'You have already reviewed this product',
+                });
+            }
+
+            const newReview = {
+                user: userId,
+                rating,
+                comment,
+                createdAt: new Date(),
+            };
+            product.reviews.push(newReview);
+
+            const totalRatings = product.reviews.length;
+            const totalScore = product.reviews.reduce((acc, review) => acc + review.rating, 0);
+            product.rating = totalScore / totalRatings;
+
+            console.log('Saving product with new review:', { productId, newReview });
+            await product.save();
+
+            resolve({
+                status: 'OK',
+                message: 'Review added successfully',
+                data: newReview,
+            });
+        } catch (e) {
+            console.error('Error in addReview:', {
+                error: e.message,
+                stack: e.stack,
+                productId,
+                userId,
+            });
+            reject({
+                status: 'ERR',
+                message: e.message || 'An error occurred while adding the review',
+                errorDetails: e.name,
+            });
+        }
+    });
+};
+
+  
+const getReviews = (productId) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!mongoose.isValidObjectId(productId)) {
+                return reject({
+                    status: 'ERR',
+                    message: 'Invalid product ID',
+                });
+            }
+
+            const product = await Product.findById(productId)
+                .select('reviews') // Chỉ lấy trường reviews
+                .populate('reviews.user', 'name avatar'); // Lấy name và avatar từ bảng User
+
+            if (!product) {
+                return reject({
+                    status: 'ERR',
+                    message: 'Product not found',
+                });
+            }
+            console.log('Fetched reviews:', product.reviews); // Log dữ liệu reviews
+
+            resolve({
+                status: 'OK',
+                message: 'Reviews fetched successfully',
+                data: product.reviews,
+            });
+        } catch (e) {
+            console.error('Error in getReviews:', {
+                error: e.message,
+                stack: e.stack,
+                productId,
+            });
+            reject({
+                status: 'ERR',
+                message: e.message || 'An error occurred while fetching reviews',
+                errorDetails: e.name,
+            });
+        }
+    });
+};
 
 module.exports = {
     createProduct,
@@ -301,5 +504,11 @@ module.exports = {
     getAllProduct,
     deleteManyProduct,
     getAllType,
-    getProductByType
+    getProductByType,
+    getTopSellingProducts,
+    getTopNewProducts,
+    addReview,
+    getReviews,
+    
+    
 }

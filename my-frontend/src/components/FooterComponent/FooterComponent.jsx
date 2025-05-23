@@ -79,7 +79,7 @@ const Footer = () => {
 
             <FooterContent>
                 <Column>
-                    <LogoText>DUONGHUUDAT</LogoText>
+                    <LogoText>Fashion Style</LogoText>
                     <Description>
                         Chúng tôi có những bộ quần áo phù hợp với phong cách của bạn và bạn tự hào khi mặc chúng. Từ phụ nữ đến nam giới.
                     </Description>
@@ -87,7 +87,7 @@ const Footer = () => {
                         <a href="#"><SocialIcon src={TwitterIcon} alt="Twitter" /></a>
                         <a href="#"><SocialIcon src={FacebookIcon} alt="Facebook" /></a>
                         <a href="#"><SocialIcon src={InstagramIcon} alt="Instagram" /></a>
-                        <a href="#"><SocialIcon src={GithubIcon} alt="GitHub" /></a>
+                        <a href="https://github.com/duonghuudat/"><SocialIcon src={GithubIcon} alt="GitHub" /></a>
                     </SocialIcons>
                 </Column>
 
@@ -126,7 +126,7 @@ const Footer = () => {
 
             <BottomBar>
                 <Copyright>
-                    Shop.co © 2000-2023, All Rights Reserved
+                    Fashion Style © Since-2025, All Rights Reserved
                 </Copyright>
                 <PaymentIcons>
                     <PaymentIcon src={VisaIcon} alt="Visa" />

@@ -81,3 +81,46 @@ export const getProductByType = async (type, limit = 5) => {
     return res.data
   }
   
+export const getTopSellingProducts = async (limit = 5) => {
+    const res = await axios.get(`${process.env.REACT_APP_API_URL}/product/top-selling?limit=${limit}`)
+    return res.data
+  }
+  
+export const getTopNewProducts = async (limit = 5) => {
+const res = await axios.get(`${process.env.REACT_APP_API_URL}/product/top-new?limit=${limit}`)
+return res.data
+}
+  
+export const addReview = async (productId, rating, comment, access_token) => {
+    try {
+        const res = await axiosJWT.post(
+            `${process.env.REACT_APP_API_URL}/product/${productId}/reviews`,
+            { rating, comment },
+            {
+                headers: {
+                    token: `Bearer ${access_token}`,
+                },
+            }
+        );
+        return res.data;
+    } catch (error) {
+        console.error('Error adding review:', error);
+        return {
+            status: 'ERR',
+            message: error.response?.data?.message || 'An error occurred while adding the review',
+        };
+    }
+};
+
+export const getReviews = async (productId) => {
+    try {
+        const res = await axios.get(`${process.env.REACT_APP_API_URL}/product/${productId}/reviews`);
+        return res.data;
+    } catch (error) {
+        console.error('Error fetching reviews:', error);
+        return {
+            status: 'ERR',
+            message: error.response?.data?.message || 'An error occurred while fetching reviews',
+        };
+    }
+};

@@ -11,6 +11,9 @@ import {
   StatBox,
   StatValue,
   StatLabel,
+  Overlay,
+  BrandLogosWrapper,
+  BrandLogo,
 } from './style';
 
 const SliderComponent = ({ arrImages }) => {
@@ -23,40 +26,50 @@ const SliderComponent = ({ arrImages }) => {
     autoplay: true,
     autoplaySpeed: 4000,
   };
-
+  // const brandLogos = [
+  //   'https://upload.wikimedia.org/wikipedia/commons/3/3a/Zara_Logo.svg',
+  //   'https://upload.wikimedia.org/wikipedia/commons/7/76/Gucci_Logo.svg',
+  //   'https://upload.wikimedia.org/wikipedia/commons/0/0e/Prada-Logo.svg',
+  //   'https://upload.wikimedia.org/wikipedia/commons/d/da/Louis_Vuitton_logo_and_wordmark.svg',
+  // ];
+  
   return (
+    <div>
     <WrapperSliderStyle {...settings}>
-      {arrImages.map((image) => (
-        <SlideWrapper key={image}>
-          <Image src={image} alt="slider" preview={false} width="100%" height="100%" style={{ objectFit: 'cover' }} />
+      {arrImages.map((image, index) => (
+        <SlideWrapper key={index}>
+          <Image src={image} preview={false} />
+          <Overlay />
           <SlideContent>
-            <Title>TÌM QUẦN ÁO PHÙ HỢP VỚI PHONG CÁCH CỦA BẠN</Title>
-            <Description style={{color: 'black'}}>
-                Duyệt qua nhiều loại trang phục được thiết kế tỉ mỉ, đa dạng của chúng tôi, được thiết kế để tôn lên cá tính và phù hợp với phong cách của bạn.
+            <Title>Khám phá bộ sưu tập mới</Title>
+            <Description>
+              Duyệt qua nhiều loại trang phục được thiết kế tỉ mỉ, đa dạng của chúng tôi, được thiết kế để tôn lên cá tính và phù hợp với phong cách của bạn.
             </Description>
             <CTAButton>Shop Now</CTAButton>
-
             <StatsContainer>
               <StatBox>
                 <StatValue>200+</StatValue>
-                <StatLabel>Thương hiệu quốc tế
-                </StatLabel>
+                <StatLabel>Thương hiệu quốc tế</StatLabel>
               </StatBox>
               <StatBox>
                 <StatValue>2,000+</StatValue>
-                <StatLabel>Sản phẩm chất lượng cao
-                </StatLabel>
+                <StatLabel>Sản phẩm chất lượng cao</StatLabel>
               </StatBox>
               <StatBox>
                 <StatValue>30,000+</StatValue>
-                <StatLabel>Khách hàng hài lòng
-                </StatLabel>
+                <StatLabel>Khách hàng hài lòng</StatLabel>
               </StatBox>
             </StatsContainer>
           </SlideContent>
         </SlideWrapper>
       ))}
     </WrapperSliderStyle>
+    {/* <BrandLogosWrapper>
+    {brandLogos.map((logo, i) => (
+      <BrandLogo key={i} src={logo} alt={`Brand ${i}`} />
+    ))}
+  </BrandLogosWrapper> */}
+  </div>
   );
 };
 

@@ -1,256 +1,226 @@
 import styled from "styled-components";
 
-export const WrapperStyleHeader = styled.div`
-  background: rgb(255, 255, 255);
-  padding: 9px 16px;
-  border-radius: 4px;
-  display: flex;
-  align-items: center;
-  span {
-    color: rgb(36,36,36);
-    font-weight: 400;
-    font-sizeL 13px;
-  }
+// Color constants
+const textPrimary = '#333';
+const textSecondary = '#777';
+const textMuted = '#aaa';
+const primaryBlue = '#1890ff';
+const dangerRed = '#ff424e';
 
-`;
-
-export const WrapperStyleHeaderDelivery = styled.div`
-  background: rgb(255, 255, 255);
-  padding: 9px 16px;
-  border-radius: 4px;
-  display: flex;
-  align-items: center;
-  span {
-    color: rgb(36,36,36);
-    font-weight: 400;
-    font-sizeL 13px;
-  };
-  margin-bottom: 4px;
-
-`
-
-export const WrapperLeft = styled.div`
-  width: 65%;
-  padding-right: 20px;
-  overflow-y: auto;
-`;
+const statusStyles = {
+  paid: ['#389e0d', '#f6ffed'],
+  unpaid: ['#d48806', '#fffbe6'],
+  delivered: ['#08979c', '#e6fffb'],
+  undelivered: ['#cf1322', '#fff1f0'],
+};
 
 export const WrapperContainer = styled.div`
-  height: 100%;
-  width: 100%;
-  background-color: #f5f5fa;
-  padding: 20px;
+  background-color: #f5f5f5;
+  min-height: 100vh;
+  padding: 20px 0;
 `;
 
 export const WrapperListOrder = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 20px;
-  padding-top: 20px;
+  gap: 16px;
 `;
 
 export const WrapperStatus = styled.div`
-  margin-bottom: 16px;
-  font-size: 14px;
+  display: flex;
+  gap: 8px;
 
-  span {
-    display: block;
-    margin-bottom: 8px;
-    font-weight: bold;
-    color: #555;
+  .tag {
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 12px;
   }
-
-  .status {
-    color: rgb(255, 66, 78);
-    font-weight: 600;
+  
+  .delivered {
+    color: ${statusStyles.delivered[0]};
+    background-color: ${statusStyles.delivered[1]};
+  }
+  
+  .undelivered {
+    color: ${statusStyles.undelivered[0]};
+    background-color: ${statusStyles.undelivered[1]};
+  }
+  
+  .paid {
+    color: ${statusStyles.paid[0]};
+    background-color: ${statusStyles.paid[1]};
+  }
+  
+  .unpaid {
+    color: ${statusStyles.unpaid[0]};
+    background-color: ${statusStyles.unpaid[1]};
   }
 `;
 
 export const WrapperHeaderItem = styled.div`
   display: flex;
   align-items: center;
-  margin-bottom: 16px;
+  padding: 16px 0;
+  
+  img {
+    width: 70px;
+    height: 70px;
+    object-fit: cover;
+    border: 1px solid #eee;
+    border-radius: 10px;
+    margin-right: 16px;
+  }
+
+  .product-info {
+    flex: 1;
+    font-weight: 500;
+    margin-bottom: 6px;
+    font-size: 15px;
+    color: ${textPrimary};
+  }
+
+  .product-meta {
+    color: ${textSecondary};
+    font-size: 13px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .product-price {
+    font-weight: 600;
+    color: ${dangerRed};
+    text-align: right;
+    min-width: 120px;
+  }
 `;
 
 export const WrapperFooterItem = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding-top: 10px;
-  border-top: 1px solid #e0e0e0;
+  padding: 16px;
+  background-color: #fafafa;
+  border-top: 1px solid #f0f0f0;
+
+  .total-label {
+    font-weight: 500;
+    margin-right: 8px;
+  }
 
   .total-price {
+    color: ${dangerRed};
     font-size: 18px;
-    font-weight: 700;
-    color: rgb(254, 56, 52);
+    font-weight: 600;
   }
 
   .actions {
     display: flex;
-    gap: 10px;
+    gap: 12px;
+  }
+`;
 
-    button {
-      padding: 8px 16px;
-      border: 1px solid rgb(11, 116, 229);
-      border-radius: 4px;
-      background: transparent;
-      color: rgb(11, 116, 229);
+export const OrderHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background-color: #f5f7fa;
+  border-bottom: 1px solid #ebedf0;
+
+  .order-id {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    
+    .id-label {
+      font-weight: 500;
       font-size: 14px;
-      cursor: pointer;
-      transition: background 0.2s, color 0.2s;
-
-      &:hover {
-        background: rgb(11, 116, 229);
-        color: #fff;
-      }
+    }
+    
+    .id-value {
+      font-weight: 600;
+      color: ${primaryBlue};
     }
   }
 `;
 
-export const WrapperItemOrder = styled.div`
+export const EmptyOrders = styled.div`
+  text-align: center;
+  padding: 60px;
+  background-color: #fff;
+  border-radius: 12px;
+  color: ${textSecondary};
+`;
+
+export const PaginationWrapper = styled.div`
+  text-align: center;
+  padding: 16px 0;
+  border-top: 1px solid #f0f0f0;
+  background-color: #fff;
+`;
+
+export const PageHeader = styled.div`
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  padding: 16px 20px;
-  background: #fff;
-  border-radius: 8px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  transition: background-color 0.3s;
-
-  &:hover {
-    background-color: #f9f9f9;
-  }
-
-  img {
-    width: 80px;
-    height: 80px;
-    object-fit: cover;
-    border-radius: 5px;
-    margin-right: 15px;
-  }
-
-  .product-info {
-    flex: 2;
-    font-size: 14px;
-    font-weight: 500;
-    color: #333;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  .product-price {
-    flex: 1;
-    text-align: right;
-    font-size: 16px;
-    font-weight: 700;
-    color: rgb(254, 56, 52);
-  }
-`;
-
-export const WrapperPriceDiscount = styled.span`
-  color: #999;
-  font-size: 13px;
-  text-decoration: line-through;
-  margin-left: 6px;
-  font-weight: 400;
-`;
-
-export const WrapperCountOrder = styled.div`
-  display: flex;
   align-items: center;
-  width: 110px;
-  border-radius: 4px;
-  margin-top: 10px;
-  gap: 5px;
-  padding: 5px 10px;
-  background: #f5f5f5;
+  padding: 16px 24px;
+  border-bottom: 1px solid #f0f0f0;
+  background-color: #fff;
 
-  button {
-    background: transparent;
-    border: none;
-    cursor: pointer;
-  }
-`;
-
-export const WrapperRight = styled.div`
-  width: 35%;
-  margin-left: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  align-items: flex-start;
-  background: #fff;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-
-  .subtotal-info {
-    display: flex;
-    justify-content: space-between;
-    font-size: 14px;
-    color: #333;
+  h2 {
     font-weight: 600;
-  }
-
-  .total {
-    font-size: 24px;
-    font-weight: 700;
-    color: rgb(254, 56, 52);
+    font-size: 22px;
+    margin: 0;
   }
 `;
 
-export const WrapperInfo = styled.div`
-  padding: 20px;
-  background: #fff;
-  border-radius: 8px;
-  width: 100%;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-
-  .info-row {
-    display: flex;
-    justify-content: space-between;
-    font-size: 14px;
-    color: #555;
-
-    .label {
-      font-weight: bold;
-      color: #333;
-    }
-
-    .value {
-      text-align: right;
-    }
+// Optional: Styled button components if needed
+export const CancelButton = styled.button`
+  background-color: #fff;
+  border: 1px solid ${dangerRed};
+  border-radius: 6px;
+  height: 36px;
+  padding: 0 16px;
+  color: ${dangerRed};
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  
+  &:hover {
+    background-color: #fff1f0;
   }
 `;
 
-export const WrapperTotal = styled.div`
-  display: flex;
-  justify-content: space-between;
-  padding: 20px;
-  background: #fff;
-  border-radius: 8px;
-  width: 100%;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-
-  span {
-    font-size: 18px;
-    font-weight: 700;
-  }
-
-  .total-price {
-    color: rgb(254, 56, 52);
-    font-size: 26px;
-    font-weight: 700;
-  }
-
-  .vat-info {
-    font-size: 12px;
-    color: #888;
+export const DetailsButton = styled.button`
+  background-color: ${primaryBlue};
+  border: none;
+  border-radius: 6px;
+  height: 36px;
+  padding: 0 16px;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  
+  &:hover {
+    background-color: #096dd9;
   }
 `;
 
+export const OrderContainer = styled.div`
+  max-width: 1100px;
+  margin: 0 auto;
+`;
+
+export const OrderCard = styled.div`
+  margin-bottom: ${({ isLast }) => isLast ? 0 : '16px'};
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  background-color: #fff;
+`;
+
+export const ProductsList = styled.div`
+  padding: 0 16px;
+`;

@@ -11,6 +11,9 @@ import { orderContant } from '../../contant'
 import PieChartComponent from './PieChartComponent'
 import BarChartComponent from './BarChartComponent'
 import OrderStatusUpdater from './OrderStatusUpdater'
+import { useMemo } from 'react'
+import ProductTypePieChart from './ProductTypePieChart '
+import { format } from 'date-fns';
 
 const OrderAdmin = ({ onOrderUpdate }) => {
   const user = useSelector((state) => state?.user)
@@ -23,6 +26,22 @@ const OrderAdmin = ({ onOrderUpdate }) => {
 
   const queryOrder = useQuery({ queryKey: ['orders'], queryFn: getAllOrder })
   const { isPending: isPendingOrders, data: orders } = queryOrder
+  const productTypeData = useMemo(() => {
+    const typeCount = {}
+  
+    orders?.data?.forEach(order => {
+      order.orderItems.forEach(item => {
+        const type = item.type || 'Khác'
+        typeCount[type] = (typeCount[type] || 0) + item.qty
+      })
+    })
+  
+    return Object.entries(typeCount).map(([type, value]) => ({
+      type,
+      value,
+    }))
+  }, [orders])
+  
 
   const handleSearch = (selectedKeys, confirm, dataIndex) => {
     confirm()
@@ -73,35 +92,48 @@ const OrderAdmin = ({ onOrderUpdate }) => {
 
   const columns = [
     {
-      title: 'Họ tên',
+      title: 'Mã đơn hàng',
+      dataIndex: '_id',
+      sorter: (a, b) => a._id.length - b._id.length,
+      ...getColumnSearchProps('_id'),
+    },
+    {
+      title: 'Tên khách hàng',
       dataIndex: 'userName',
       sorter: (a, b) => a.userName.length - b.userName.length,
       ...getColumnSearchProps('userName'),
     },
+    // {
+    //   title: 'Tên sản phẩm',
+    //   dataIndex: 'itemName',
+    //   sorter: (a, b) => a.itemName.length - b.itemName.length,
+    //   ...getColumnSearchProps('itemName'),
+    // },
+    // {
+    //   title: 'Điện thoại',
+    //   dataIndex: 'phone',
+    //   sorter: (a, b) => a.phone.length - b.phone.length,
+    //   ...getColumnSearchProps('phone'),
+    // },
     {
-      title: 'Tên sản phẩm',
-      dataIndex: 'itemName',
-      sorter: (a, b) => a.itemName.length - b.itemName.length,
-      ...getColumnSearchProps('itemName'),
+      title: 'Ngày đặt hàng',
+      dataIndex: 'createdAt',
+      sorter: (a, b) => new Date(a.createdAt) - new Date(b.createdAt),
+      render: (date) => format(new Date(date), 'dd/MM/yyyy HH:mm:ss'),
+      ...getColumnSearchProps('createdAt'),
     },
-    {
-      title: 'Điện thoại',
-      dataIndex: 'phone',
-      sorter: (a, b) => a.phone.length - b.phone.length,
-      ...getColumnSearchProps('phone'),
-    },
-    {
-      title: 'Địa chỉ',
-      dataIndex: 'address',
-      sorter: (a, b) => a.address.length - b.address.length,
-      ...getColumnSearchProps('address'),
-    },
-    {
-      title: 'Giá sản phẩm',
-      dataIndex: 'itemsPrice',
-      sorter: (a, b) => a.itemsPrice.length - b.itemsPrice.length,
-      ...getColumnSearchProps('itemsPrice'),
-    },
+    // {
+    //   title: 'Địa chỉ',
+    //   dataIndex: 'address',
+    //   sorter: (a, b) => a.address.length - b.address.length,
+    //   ...getColumnSearchProps('address'),
+    // },
+    // {
+    //   title: 'Giá sản phẩm',
+    //   dataIndex: 'itemsPrice',
+    //   sorter: (a, b) => a.itemsPrice.length - b.itemsPrice.length,
+    //   ...getColumnSearchProps('itemsPrice'),
+    // },
     // {
     //   title: 'Giá vận chuyển',
     //   dataIndex: 'shippingPrice',
@@ -188,15 +220,21 @@ const OrderAdmin = ({ onOrderUpdate }) => {
   return (
     <div>
       <WrapperHeader>Quản lý đơn hàng</WrapperHeader>
+      {/* <div style={{ display: 'flex', gap: '24px', alignItems: 'center' }}>
       <div style={{ height: '200px', width: '200px' }}>
         <PieChartComponent data={orders?.data} />
       </div>
+      <div style={{ height: '200px', width: '200px' }}>
+        <ProductTypePieChart data={orders?.data} />
+        </div>
+    </div> */}
+
       <div style={{ marginTop: '20px' }}>
         <TableComponent columns={columns} isPending={isPendingOrders} data={dataTable} />
       </div>
-      <div style={{ height: 400, marginTop: 20 }}>
+      {/* <div style={{ height: 400, marginTop: 20 }}>
         <BarChartComponent data={orders?.data} />
-      </div>
+      </div> */}
     </div>
   )
 }

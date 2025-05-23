@@ -18,9 +18,65 @@ export const WrapperContainer = styled.div`
   }
 `
 
-export const StatCard = styled(Card)`
-  ${commonCardStyle}
-`
+export const StatCard = styled.div`
+  background: #fff;
+  border-radius: 16px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+  cursor: default;
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+  }
+
+  .stat-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  @media (max-width: 768px) {
+    padding: 16px;
+  }
+`;
+
+export const GradientText = styled.span`
+  background: linear-gradient(90deg, #34d399, #8c88f9);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-size: 14px;
+  font-weight: 600;
+`;
+
+
+
+
+
+export const IconWrapper = styled.div`
+  background-color: ${({ color }) => color}20;
+  color: ${({ color }) => color};
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+`;
+
+export const GrowthText = styled.div`
+  font-size: 12px;
+  color: ${({ positive }) => (positive ? '#52c41a' : '#ff4d4f')};
+  display: flex;
+  align-items: center;
+  gap: 4px;
+`;
+
 
 export const RevenueChartCard = styled(Card)`
   ${commonCardStyle}

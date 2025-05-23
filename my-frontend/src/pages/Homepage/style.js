@@ -1,52 +1,3 @@
-// import styled from "styled-components";
-// import ButtonComponent from "../../components/ButtonComponent/ButtonComponent";
-
-// export const WrapperTypeProduct = styled.div`
-//     display: flex;
-//     align-items: center;
-//     gap: 24px;
-//     justify-content: flex-start;
-//     height: 44px;
-// `;
-
-// export const WrapperButtonMore = styled(ButtonComponent)`
-//     &:hover {
-//         color: #fff;
-//         background: rgb(13,92,182);
-//         span {
-//             color: #fff;
-//         }
-//     };
-//     width: 100%;
-//     text-align: center;
-//     cursor: ${(props) => props.disabled ? 'not-allowed' : 'pointers'}
-
-// `
-
-// // export const WrapperProducts = styled.div`
-// //     display: flex;
-// //     gap: 14px;
-// //     margin-top: 20px;
-// //     flex-wrap: wrap;
-// // `
-
-// export const WrapperSection = styled.div`
-//   margin-top: 40px;
-// `;
-
-// export const SectionTitle = styled.h2`
-//   font-size: 22px;
-//   font-weight: 700;
-//   text-align: center;
-//   margin-bottom: 20px;
-// `;
-
-// export const WrapperProducts = styled.div`
-//   display: flex;
-//   flex-wrap: wrap;
-//   gap: 16px;
-//   justify-content: center;
-// `;
 
 import styled from "styled-components";
 import ButtonComponent from "../../components/ButtonComponent/ButtonComponent";
@@ -94,6 +45,7 @@ export const WrapperSection = styled.div`
 
 // Tiêu đề section (ví dụ: NEW ARRIVALS, TOP SELLING)
 export const SectionTitle = styled.h2`
+  font-family: 'Roboto', sans-serif;
   font-size: 26px;
   font-weight: 900;
   text-transform: uppercase;
@@ -102,9 +54,63 @@ export const SectionTitle = styled.h2`
 `;
 
 // Danh sách sản phẩm trong section
+// export const WrapperProducts = styled.div`
+//   display: flex;
+//   flex-wrap: wrap;
+//   gap: 16px;
+//   justify-content: center;
+// `;
+// Danh sách sản phẩm có thể trượt ngang
 export const WrapperProducts = styled.div`
   display: flex;
-  flex-wrap: wrap;
   gap: 16px;
-  justify-content: center;
+  overflow-x: auto;
+  padding-bottom: 10px;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+
+  > * {
+    scroll-snap-align: start;
+    flex: 0 0 auto;
+  }
+
+  cursor: grab;
+  user-select: none;
+
+  &.dragging {
+    cursor: grabbing;
+  }
+`;
+
+
+export const ArrowButton = styled.button`
+  position: absolute;
+  top: 35%;
+  ${(props) => (props.direction === 'left' ? 'left: -10px' : 'right: -10px')};
+  transform: translateY(-50%);
+  background: white;
+  border: 1px solid #ccc;
+  border-radius: 50%;
+  padding: 6px;
+  cursor: pointer;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  z-index: 5;
+  transition: background 0.2s;
+
+  &:hover {
+    background: #000;
+    svg {
+      color: #fff;
+    }
+  }
+
+  svg {
+    color: #333;
+  }
 `;

@@ -35,7 +35,7 @@ export const WrapperSliderStyle = styled(Slider)`
 export const SlideWrapper = styled.div`
   position: relative;
   width: 100vw;
-  height: 60vh; /* Giảm chiều cao slider */
+  height: 70vh;
 
   img {
     width: 100%;
@@ -48,14 +48,19 @@ export const SlideWrapper = styled.div`
   }
 `;
 
+export const Overlay = styled.div`
+    display: none;
+
+`;
 
 export const SlideContent = styled.div`
   position: absolute;
   top: 50%;
-  left: 5%;
+  left: 8%;
   transform: translateY(-50%);
   max-width: 600px;
-  color: #fff;
+  color: #222;
+  z-index: 2;
 
   @media (max-width: 768px) {
     top: 45%;
@@ -64,43 +69,47 @@ export const SlideContent = styled.div`
 
 
 export const Title = styled.h1`
-color: black;
-
+  font-family: 'Roboto', sans-serif;
   font-size: 48px;
   font-weight: 800;
   line-height: 1.2;
+  color: #111;
 
   @media (max-width: 768px) {
     font-size: 32px;
   }
 `;
 
-export const Description = styled.p`
 
+export const Description = styled.p`
   margin: 16px 0;
-  font-size: 16px;
-  color: #eee;
+  font-size: 18px;
+  color: #555;
+  line-height: 1.6;
 
   @media (max-width: 768px) {
     font-size: 14px;
   }
 `;
 
+
 export const CTAButton = styled.button`
   background-color: #000;
   color: #fff;
-  padding: 12px 24px;
+  padding: 12px 28px;
   border-radius: 25px;
-  font-weight: bold;
+  font-weight: 600;
   cursor: pointer;
   border: none;
-  margin-top: 12px;
+  margin-top: 20px;
+  font-size: 16px;
   transition: all 0.3s ease;
 
   &:hover {
     background-color: #333;
   }
 `;
+
 
 export const StatsContainer = styled.div`
   display: flex;
@@ -114,14 +123,13 @@ export const StatsContainer = styled.div`
 `;
 
 export const StatBox = styled.div`
-color: black;
+  color: #222;
 `;
 
 export const StatValue = styled.h2`
-color: black;
-
   font-size: 28px;
   font-weight: bold;
+  color: #000;
 
   @media (max-width: 768px) {
     font-size: 20px;
@@ -130,9 +138,33 @@ color: black;
 
 export const StatLabel = styled.p`
   font-size: 14px;
-  color: #ccc;
+  color: #777;
 
   @media (max-width: 768px) {
     font-size: 12px;
+  }
+`;
+
+export const BrandLogosWrapper = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 40px;
+  padding: 40px 20px;
+  flex-wrap: wrap;
+  background-color: #fafafa;
+`;
+
+export const BrandLogo = styled.img`
+  height: 40px;
+  max-width: 120px;
+  object-fit: contain;
+  filter: grayscale(100%);
+  opacity: 0.8;
+  transition: all 0.3s ease;
+
+  &:hover {
+    filter: grayscale(0%);
+    opacity: 1;
   }
 `;

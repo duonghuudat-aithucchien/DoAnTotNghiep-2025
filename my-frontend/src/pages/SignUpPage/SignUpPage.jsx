@@ -66,7 +66,7 @@ const SignUpPage = () => {
       <div style={{width: '800px', height: '445px', borderRadius: '6px', background: '#fff', display: 'flex'}}>
         <WrapperContainerLeft>
           <h1>Xin chào</h1>
-          <p>Đăng nhập và tạo tài khoản</p>
+          <p>Đăng ký và tạo tài khoản</p>
           <InputForm style={{marginBottom: '10px'}} placeholder="abc@gmail.com" value={email} onChange={handleOnchangeEmail}/>
           <div style={{position: 'relative'}}>
             <span
@@ -115,7 +115,7 @@ const SignUpPage = () => {
         </WrapperContainerLeft>
         <WrapperContainerRight>
           <Image src={imageLogo} preview={false} alt="image-logo" height="203px" width="203px" />
-          <h4>Mua sắm tại DUONGHUUDAT</h4>
+          <h4 style={{fontSize: '14px'}}>Mua sắm tại Fashion Style</h4>
         </WrapperContainerRight>
       </div>
     </div>

@@ -94,6 +94,12 @@ const updateOrderStatus = (orderId, newStatus) => {
             if (newStatus === 'delivered') {
                 updateFields.isDelivered = true;
                 updateFields.deliveredAt = new Date();
+
+                const order = await Order.findById(orderId);
+                if (order && !order.isPaid) {
+                    updateFields.isPaid = true;
+                    updateFields.paidAt = new Date();
+                }
             }
 
             const updatedOrder = await Order.findByIdAndUpdate(
