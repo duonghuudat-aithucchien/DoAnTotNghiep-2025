@@ -20,7 +20,7 @@ app.use(cookieParser())
 routes(app);
 
 
-mongoose.connect('mongodb+srv://duongdat667:3rxpSuUkVA9St5Cs@cluster.z1r1o.mongodb.net/?retryWrites=true&w=majority&appName=Cluster')
+mongoose.connect('mongodb+srv://duongdat667:@cluster.z1r1o.mongodb.net/?retryWrites=true&w=majority&appName=Cluster')
     .then(() =>{
         console.log('Connect Db success')
     })
