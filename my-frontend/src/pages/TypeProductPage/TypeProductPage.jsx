@@ -16,8 +16,7 @@ const { Option } = Select
 const TypeProductPage = () => {
   const searchProduct = useSelector((state) => state?.product?.search)
   const searchDebounce = useDebounce(searchProduct, 500)
-  const { state: type } = useLocation() // ✅ alias state -> type cho rõ ràng
-
+  const { state: type } = useLocation() 
   const [products, setProducts] = useState([])
   const [pending, setPending] = useState(false)
   const [panigate, setPanigate] = useState({
@@ -87,7 +86,7 @@ const TypeProductPage = () => {
                 <Title level={3} style={{ margin: 0 }}>{type || 'Category'}</Title>
                 <WrapperTopBar>
                   <span>
-                    Hiển thị {products.length} / {panigate.total * panigate.limit} sản phẩm
+                    Hiển thị {products.length} / {panigate.limit} sản phẩm
                   </span>
                   {/* <Select defaultValue="Most Popular" size="small" disabled>
                     <Option value="popular">Phổ biến nhất</Option>
@@ -123,7 +122,7 @@ const TypeProductPage = () => {
 
               <Pagination
                 current={panigate.page + 1}
-                total={panigate.total * panigate.limit}
+                total={panigate.total}
                 pageSize={panigate.limit}
                 onChange={onChange}
                 style={{ textAlign: 'center', marginTop: '30px' }}

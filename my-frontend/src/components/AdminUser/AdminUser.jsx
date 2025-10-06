@@ -140,7 +140,7 @@ const AdminUser = () => {
           return (
               <div>
                   <DeleteOutlined style={{color: 'red', fontSize: '30px', cursor: 'pointer'}} onClick={() => setisModalOpenDelete(true)}/>
-                  <EditOutlined style={{color: 'orange', fontSize: '30px', cursor: 'pointer'}} onClick={handleDetailsUser}/>
+                  {/* <EditOutlined style={{color: 'orange', fontSize: '30px', cursor: 'pointer'}} onClick={handleDetailsUser}/> */}
               </div>
           )
       }
@@ -313,6 +313,30 @@ const AdminUser = () => {
           },
           
       ];
+
+      const columnsExport = [
+  {
+    title: 'Họ tên',
+    dataIndex: 'name',
+  },
+  {
+    title: 'Email',
+    dataIndex: 'email',
+  },
+  {
+    title: 'Địa chỉ',
+    dataIndex: 'address',
+  },
+  {
+    title: 'Trạng thái',
+    dataIndex: 'isAdmin',
+  },
+  {
+    title: 'Điện thoại',
+    dataIndex: 'phone',
+  },
+];
+
   
       const dataTable = users?.data?.length && users?.data?.map((user) => {
           return {...user, key: user._id}
@@ -406,7 +430,7 @@ const AdminUser = () => {
         <WrapperHeader>Quản lý người dùng</WrapperHeader>
 
           <div style={{marginTop: '20px'}}>
-              <TableComponent handleDeleteMany={handleDeleteManyUsers} columns={columns} isPending={isPendingUsers} data={dataTable}
+              <TableComponent handleDeleteMany={handleDeleteManyUsers} columns={columns} isPending={isPendingUsers} data={dataTable} exportColumns={columnsExport}
                   onRow={(record, rowIndex) => {
                       return {
                           onClick: even => {

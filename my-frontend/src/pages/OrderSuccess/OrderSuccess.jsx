@@ -13,32 +13,6 @@ import { message, Pagination, Divider, Tag } from 'antd';
 
 
 const OrderSuccess = () => {
-  // const order = useSelector((state) => state.order)
-  // const location = useLocation()
-  // const {state} = location
-  // const navigate = useNavigate()
-
-  // const fetchMyOrder = async () => {
-  //   const res = await OrderService.getOrderbyUserId(state?.id, state?.token)
-  //   return res.data
-  // }
-
-  // const queryOrder = useQuery({
-  //   queryKey: ['users'],
-  //   queryFn: fetchMyOrder,
-  //   enabled: Boolean(state?.id && state?.token)
-  // });
-
-  // const { isPending, data } = queryOrder;
-
-  // const handleDetaisOrder = (id) => {
-  //   navigate(`/details-order/${id}`, {
-  //     state: {
-  //       token: state?.token
-  //     }
-  //   })
-  // }
-
   const location = useLocation();
     const { state } = location;
     const navigate = useNavigate();
@@ -307,29 +281,25 @@ const OrderSuccess = () => {
                 }}>
                   {convertPrice(state?.totalPriceMemo)}
                 </span>
-              </div>
-              
-              {state?.orders?.map((order) => (
-    <ButtonDetail
-        key={order._id}
-        onClick={() => handleDetaisOrder(order._id)} // Truyền id của từng đơn hàng
-        style={{
-            width: '100%',
-            padding: '12px 20px',
-            fontSize: '15px',
-            fontWeight: 600,
-            borderRadius: '8px',
-            background: 'linear-gradient(to right, #1890ff, #13c2c2)',
-            color: '#fff',
-            border: 'none',
-            cursor: 'pointer',
-            transition: 'all 0.3s ease',
-            boxShadow: '0 4px 12px rgba(24, 144, 255, 0.4)',
-        }}
-    >
-        Xem chi tiết đơn hàng
-    </ButtonDetail>
-))}
+              </div>              
+                <ButtonDetail
+                onClick={() => navigate('/order')} 
+                    style={{
+                        width: '100%',
+                        padding: '12px 20px',
+                        fontSize: '15px',
+                        fontWeight: 600,
+                        borderRadius: '8px',
+                        background: 'linear-gradient(to right, #1890ff, #13c2c2)',
+                        color: '#fff',
+                        border: 'none',
+                        cursor: 'pointer',
+                        transition: 'all 0.3s ease',
+                        boxShadow: '0 4px 12px rgba(24, 144, 255, 0.4)',
+                    }}
+                >
+                Tiếp tục mua sắm
+                </ButtonDetail>
             </div>
             
             {/* Customer Support Note */}

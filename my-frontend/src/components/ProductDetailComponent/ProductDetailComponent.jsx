@@ -1,9 +1,6 @@
-
-
 import React, { useEffect, useMemo, useState } from 'react' 
 import {Col, Row, Image, Rate} from 'antd'
-import imageProductSmall from '../../assets/images/image7.png'
-import { WrapperStyleImageSmall, WrapperStyleColImage, WrapperStyleNameProduct, WrapperStyleTextSell, WrapperPriceProduct, WrapperPriceTextProduct, WrapperAddressProduct, WrapperQualityProduct, WrapperInputNumber } from './style'
+import { WrapperStyleNameProduct, WrapperStyleTextSell, WrapperPriceProduct, WrapperPriceTextProduct, WrapperQualityProduct, WrapperInputNumber } from './style'
 import { MinusOutlined, PlusOutlined } from '@ant-design/icons'
 import ButtonComponent from '../../components/ButtonComponent/ButtonComponent'
 import * as ProductService from '../../service/ProductService'
@@ -15,8 +12,7 @@ import { useDispatch } from 'react-redux';
 import { addOrderProduct, resetOrder } from '../../redux/slides/orderSlide'
 import convertPrice from '../../utils'
 import * as message from '../../components/Message/Message'
-import LikeButtonComponent from '../LikeButtonComponent/LikeButtonComponent'
-import CommentFB from '../LikeButtonComponent/CommentFB'
+
 
 const ProductDetailComponent = ({idProduct}) => {
     const [numProduct, setNumProduct] = useState(1)
@@ -80,31 +76,7 @@ const ProductDetailComponent = ({idProduct}) => {
         enabled: !!idProduct,
     });
 
-    // const handleAddOrderProduct = () => {
-    //     if(!user?.id) {
-    //         navigate('/sign-in', {state: location?.pathname})
-    //     } else {
-    //         const orderRedux = order?.orderItems?.find((item) => item.product === productDetails?._id)
-    //         if((orderRedux?.amount + numProduct) <= orderRedux?.countInStock || !orderRedux) {
-    //             dispatch(addOrderProduct({
-    //                 orderItem: {
-    //                     name: productDetails?.name,
-    //                     amount: numProduct,
-    //                     image: productDetails?.image,
-    //                     price: productDetails?.price,
-    //                     product: productDetails?._id,                        
-    //                     discount: productDetails?.discount,
-    //                     countInStock: productDetails?.countInStock,
-    //                     description: productDetails?.description,
-    //                     colors: productDetails?.colors,
-    //                     sizes: productDetails?.sizes,
-    //                 }
-    //             }))
-    //         } else {
-    //             setErrorLimitOrder(true)
-    //         }
-    //     }
-    // }
+    
 
     const handleAddOrderProduct = () => {
         if (!user?.id) {
@@ -176,12 +148,7 @@ const ProductDetailComponent = ({idProduct}) => {
         }
       }, [productDetails]); 
 
-     // Chuyển đổi an toàn chuỗi thành mảng
-    // const parseToArray = (field) => {
-    //     if (Array.isArray(field)) return field;
-    //     if (typeof field === "string") return field.split(",").map((item) => item.trim());
-    //     return [];
-    // };
+     
     const parseToArray = (field) => {
         if (Array.isArray(field)) return field.filter((item) => item.trim() !== "");
         if (typeof field === "string") return field.split(",").map((item) => item.trim()).filter((item) => item !== "");
@@ -196,60 +163,50 @@ const ProductDetailComponent = ({idProduct}) => {
     return (
         <Loading isPending={isPending}>
             <Row style={{padding: '16px', background: '#fff', borderRadius: '4px'}}>
-                {/* <Col span={10} style={{borderRight:'1px solid #e5e5e5', paddingRight: '8px'}}>
-                    <Image src={productDetails?.image} alt="image-product" preview={false} style={{ borderRadius: '8px', objectFit: 'contain', width: '100%' }}/>
-                    <Row style={{paddingTop: '10px', justifyContent: 'space-between'}}>
-                        {[...Array(6)].map((_, idx) => (
-                            <WrapperStyleColImage span={4} key={idx}>
-                                <WrapperStyleImageSmall src={imageProductSmall} alt="image-small" preview={false}/>
-                            </WrapperStyleColImage>
-                        ))}
-                    </Row>
-                </Col> */}
 
-<Col span={10}>
-  <Row style={{ display: 'flex', gap: '24px' }}>
-    {/* Ảnh phụ */}
-    <div style={{ width: '80px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-      {[productDetails?.image, ...(productDetails?.subImages || [])].map((img, idx) => (
-        <div
-          key={idx}
-          onClick={() => setSelectedImage(img)}
-          style={{
-            border: selectedImage === img ? '2px solid #000' : '1px solid #e5e5e5',
-            borderRadius: '8px',
-            padding: '4px',
-            cursor: 'pointer',
-          }}
-        >
-          <Image
-            src={img}
-            alt={`thumb-${idx}`}
-            preview={true}
-            style={{ borderRadius: '4px', width: '100%', objectFit: 'cover' }}
-          />
-        </div>
-      ))}
-    </div>
+            <Col span={10}>
+              <Row style={{ display: 'flex', gap: '24px' }}>
+                {/* Ảnh phụ */}
+                <div style={{ width: '80px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  {[productDetails?.image, ...(productDetails?.subImages || [])].map((img, idx) => (
+                    <div
+                      key={idx}
+                      onClick={() => setSelectedImage(img)}
+                      style={{
+                        border: selectedImage === img ? '2px solid #000' : '1px solid #e5e5e5',
+                        borderRadius: '8px',
+                        padding: '4px',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      <Image
+                        src={img}
+                        alt={`thumb-${idx}`}
+                        preview={true}
+                        style={{ borderRadius: '4px', width: '100%', objectFit: 'cover' }}
+                      />
+                    </div>
+                  ))}
+                </div>
 
-    {/* Ảnh chính */}
-    <div style={{ flex: 1 }}>
-      <Image
-        src={selectedImage || productDetails?.image}
-        alt="main-product"
-        preview={true}
-        style={{
-          borderRadius: '12px',
-          width: '100%',
-          height: 'auto',
-          objectFit: 'contain',
-          backgroundColor: '#f9f9f9',
-          padding: '12px',
-        }}
-      />
-    </div>
-  </Row>
-</Col>
+                {/* Ảnh chính */}
+                <div style={{ flex: 1 }}>
+                  <Image
+                    src={selectedImage || productDetails?.image}
+                    alt="main-product"
+                    preview={true}
+                    style={{
+                      borderRadius: '12px',
+                      width: '100%',
+                      height: 'auto',
+                      objectFit: 'contain',
+                      backgroundColor: '#f9f9f9',
+                      padding: '12px',
+                    }}
+                  />
+                </div>
+              </Row>
+            </Col>
 
                 <Col span={14} style={{paddingLeft:'10px'}}>
                     <WrapperStyleNameProduct>{productDetails?.name}</WrapperStyleNameProduct>
@@ -274,92 +231,59 @@ const ProductDetailComponent = ({idProduct}) => {
 
                     <p style={{ fontSize: '15px', color: '#333' }}>{productDetails?.description}</p>
 
-                    {/* {Array.isArray(productDetails?.colors) && productDetails.colors.map((color) => (
+                   
+
+                {/* Màu sắc */}
+                {colors.length > 0 && (
+                  <div style={{ margin: '24px 0' }}>
+                    <div style={{ fontWeight: 500, marginBottom: 8 }}>Chọn màu sắc</div>
+                    <div style={{ display: 'flex', gap: 12 }}>
+                      {colors.map((color) => (
                         <div
-                            key={color}
-                            onClick={() => setSelectedColor(color)}
-                            style={{
-                            width: 24,
-                            height: 24,
+                          key={color}
+                          onClick={() => setSelectedColor(color)}
+                          style={{
+                            width: 28,
+                            height: 28,
                             borderRadius: '50%',
                             backgroundColor: color,
                             border: selectedColor === color ? '2px solid #000' : '1px solid #ccc',
-                            cursor: 'pointer'
-                            }}
+                            cursor: 'pointer',
+                            boxShadow: selectedColor === color ? '0 0 0 2px #00000055' : 'none',
+                            transition: 'all 0.2s ease',
+                          }}
                         />
-                    ))}
+                      ))}
+                    </div>
+                  </div>
+                )}
 
-
-
-                    {Array.isArray(productDetails?.sizes) && productDetails.sizes.map(size => (
-                        <div
-                            key={size}
-                            onClick={() => setSelectedSize(size)}
-                            style={{
-                            padding: '6px 14px',
-                            borderRadius: '20px',
-                            border: selectedSize === size ? '2px solid #000' : '1px solid #ccc',
-                            backgroundColor: selectedSize === size ? '#000' : '#fff',
-                            color: selectedSize === size ? '#fff' : '#000',
-                            fontWeight: 500,
-                            cursor: 'pointer'
-                            }}
-                        >
-                            {size}
+                    {/* Kích thước */}
+                    {sizes.length > 0 && (
+                      <div style={{ marginBottom: 24 }}>
+                        <div style={{ fontWeight: 500, marginBottom: 8 }}>Chọn kích thước</div>
+                        <div style={{ display: 'flex', gap: 12 }}>
+                          {sizes.map((size) => (
+                            <div
+                              key={size}
+                              onClick={() => setSelectedSize(size)}
+                              style={{
+                                padding: '8px 16px',
+                                borderRadius: '24px',
+                                border: selectedSize === size ? '2px solid #000' : '1px solid #ccc',
+                                backgroundColor: selectedSize === size ? '#000' : '#fff',
+                                color: selectedSize === size ? '#fff' : '#000',
+                                fontWeight: 500,
+                                cursor: 'pointer',
+                                transition: 'all 0.2s ease',
+                              }}
+                            >
+                              {size}
+                            </div>
+                          ))}
                         </div>
-                    ))} */}
-
-{/* Màu sắc */}
-{colors.length > 0 && (
-  <div style={{ margin: '24px 0' }}>
-    <div style={{ fontWeight: 500, marginBottom: 8 }}>Chọn màu sắc</div>
-    <div style={{ display: 'flex', gap: 12 }}>
-      {colors.map((color) => (
-        <div
-          key={color}
-          onClick={() => setSelectedColor(color)}
-          style={{
-            width: 28,
-            height: 28,
-            borderRadius: '50%',
-            backgroundColor: color,
-            border: selectedColor === color ? '2px solid #000' : '1px solid #ccc',
-            cursor: 'pointer',
-            boxShadow: selectedColor === color ? '0 0 0 2px #00000055' : 'none',
-            transition: 'all 0.2s ease',
-          }}
-        />
-      ))}
-    </div>
-  </div>
-)}
-
-{/* Kích thước */}
-{sizes.length > 0 && (
-  <div style={{ marginBottom: 24 }}>
-    <div style={{ fontWeight: 500, marginBottom: 8 }}>Chọn kích thước</div>
-    <div style={{ display: 'flex', gap: 12 }}>
-      {sizes.map((size) => (
-        <div
-          key={size}
-          onClick={() => setSelectedSize(size)}
-          style={{
-            padding: '8px 16px',
-            borderRadius: '24px',
-            border: selectedSize === size ? '2px solid #000' : '1px solid #ccc',
-            backgroundColor: selectedSize === size ? '#000' : '#fff',
-            color: selectedSize === size ? '#fff' : '#000',
-            fontWeight: 500,
-            cursor: 'pointer',
-            transition: 'all 0.2s ease',
-          }}
-        >
-          {size}
-        </div>
-      ))}
-    </div>
-  </div>
-)}
+                      </div>
+                    )}
 
 
                     <div style={{margin: '20px 0', padding:'10px 0', borderTop:'1px solid #e5e5e5', borderBottom:'1px solid #e5e5e5'}}>
@@ -393,7 +317,6 @@ const ProductDetailComponent = ({idProduct}) => {
                     </div>
                 </Col>
 
-                {/* <CommentFB dataHref="https://developers.facebook.com/docs/plugins/comments#configurator" width="1270" /> */}
             </Row>
         </Loading>
     )

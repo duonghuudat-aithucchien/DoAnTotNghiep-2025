@@ -9,7 +9,14 @@ const ProductDetailPage = () => {
 
   return (
     <div style={{ width: '100%', background: '#efefef' }}>
-      <div style={{ width: '1270px', height: '100%', margin: '0 auto' }}>
+      <div style={{
+          maxWidth: '1270px',
+          width: '100%',
+          margin: '0 auto',
+          paddingLeft: '16px',
+          paddingRight: '16px',
+        }}>
+
         <h5 style={{ fontSize: '20px' }}>
           <span
             style={{ cursor: 'pointer', fontWeight: 'bold' }}
@@ -24,7 +31,7 @@ const ProductDetailPage = () => {
         {/* Hiển thị chi tiết sản phẩm */}
         <ProductDetailComponent idProduct={id} />
         {/* Hiển thị đánh giá sản phẩm */}
-        <div style={{ marginTop: '20px', background: '#fff', padding: '20px', borderRadius: '8px' }}>
+        <div style={{ marginTop: '40px', background: '#fff', padding: '20px', borderRadius: '8px' }}>
           <h3 style={{ fontSize: '20px'}}>Đánh giá sản phẩm</h3>
           <ProductReviews productId={id} />
         </div>

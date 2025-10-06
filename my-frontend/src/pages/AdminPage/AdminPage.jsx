@@ -17,9 +17,8 @@ import {
 
 import { getItem } from '../../utils'
 import { ArrowUpOutlined, ArrowDownOutlined, UserOutlined, ShoppingCartOutlined, PieChartOutlined, AppstoreOutlined, SettingOutlined } from '@ant-design/icons';
-import { Menu, Row, Col, Spin, Typography, Tabs, Card, Table, Tag, Button } from 'antd'
+import { Menu, Row, Col, Spin, Typography, Tabs, Card, Table, Tag } from 'antd'
 import RevenueChart from '../../components/Charts/RevenueChart'
-import HeaderComponent from '../../components/HeaderComponent/HeaderComponent'
 import AdminUser from '../../components/AdminUser/AdminUser'
 import AdminProduct from '../../components/AdminProduct/AdminProduct'
 import OrderAdmin from '../../components/OrderAdmin/OrderAdmin'
@@ -57,11 +56,6 @@ export const AdminPage = () => {
       setLoading(false)
     }
   }
-
-  const handleToggleOrders = () => {
-    setShowAllOrders((prev) => !prev)
-  }
-  
 
   useEffect(() => {
     if (keySelected === '') {

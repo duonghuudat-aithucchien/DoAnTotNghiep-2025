@@ -106,17 +106,20 @@ const extractFiltersFromList = (products) => {
 // Top bán chạy
 const filterTopSellingProducts = async (req, res) => {
   try {
-    const limit = parseInt(req.query.limit) || 50;
+    const limit = Math.min(parseInt(req.query.limit) || 20, 50);
+
     const products = await Product.find({})
       .sort({ selled: -1 })
-      .limit(limit);
+      .limit(limit)
+      .select('name image price rating discount selled sizes colors') // đủ dùng cho Card + filter
+      .lean();
 
     const filtersAvailable = extractFiltersFromList(products);
 
     res.status(200).json({
       status: 'OK',
       message: 'SUCCESS',
-      data: [],
+      data: products, // ✅ trả luôn danh sách
       filtersAvailable,
     });
   } catch (error) {
@@ -128,20 +131,24 @@ const filterTopSellingProducts = async (req, res) => {
   }
 };
 
+
 // Sản phẩm mới
 const filterTopNewProducts = async (req, res) => {
   try {
-    const limit = parseInt(req.query.limit) || 50;
+    const limit = Math.min(parseInt(req.query.limit) || 20, 50);
+
     const products = await Product.find({})
       .sort({ createdAt: -1 })
-      .limit(limit);
+      .limit(limit)
+      .select('name image price rating discount selled sizes colors createdAt')
+      .lean();
 
     const filtersAvailable = extractFiltersFromList(products);
 
     res.status(200).json({
       status: 'OK',
       message: 'SUCCESS',
-      data: [],
+      data: products, // ✅ trả luôn danh sách
       filtersAvailable,
     });
   } catch (error) {

@@ -114,27 +114,6 @@ const PaymentPage = () => {
         },
         
       );
-      // mutationAddOrder.mutate({
-      //   token: user?.access_token,
-      //   orderItems: order?.orderItemsSelected.map(item => ({
-      //     ...item,
-      //     product: String(item.product)
-      //   })),
-      //   shippingAddress: {
-      //     fullName: user?.name,
-      //     address: user?.address,
-      //     city: user?.city,
-      //     phone: user?.phone,
-      //   },
-      //   paymentMethod: payment,
-      //   itemsPrice: priceMemo,
-      //   shippingPrice: deliveryPriceMemo,
-      //   totalPrice: totalPriceMemo,
-      //   user: user?.id,
-      //   isPaid: false,
-      //   email: user?.email,
-      // })
-      
     }
   };
   
@@ -151,8 +130,6 @@ const PaymentPage = () => {
       },
       
   )
-
-
 
   const mutationAddOrder = useMutationHooks(
     (data) => {
@@ -218,28 +195,7 @@ const PaymentPage = () => {
         paidAt: details.update_time,
         email: user?.email,
       },
-    );
-    // mutationAddOrder.mutate({
-    //   token: user?.access_token,
-    //   orderItems: order?.orderItemsSelected.map(item => ({
-    //     ...item,
-    //     product: String(item.product)
-    //   })),
-    //   shippingAddress: {
-    //     fullName: user?.name,
-    //     address: user?.address,
-    //     city: user?.city,
-    //     phone: user?.phone,
-    //   },
-    //   paymentMethod: payment,
-    //   itemsPrice: priceMemo,
-    //   shippingPrice: deliveryPriceMemo,
-    //   totalPrice: totalPriceMemo,
-    //   user: user?.id,
-    //   isPaid: true,
-    //   paidAt: details.update_time,
-    // })
-    
+    );   
   }
 
   const handleUpdateInfoUser = () => {
@@ -299,13 +255,7 @@ const PaymentPage = () => {
     document.body.appendChild(script)
   }
 
-  // useEffect(() => {
-  //   if(!window.paypal) {
-  //     addPaypalScript()
-  //   } else {
-  //     setSdkReady(true)
-  //   }
-  // }, [])
+
   useEffect(() => {
     if (!window.paypal) {
       addPaypalScript()
@@ -320,7 +270,6 @@ const PaymentPage = () => {
   }, [])
   
 
-  // const totalPriceInUSD = parseFloat((totalPriceMemo / 23000).toFixed(2));
   return (
     <div style={{ background: '#fff', width: '100%', height: '100vh' }}>
       <Loading isPending={isPendingAddOrder}>

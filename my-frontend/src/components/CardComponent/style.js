@@ -13,6 +13,22 @@ export const WrapperCardStyle = styled(Card)`
 
 `
 
+// export const WrapperCardStyle = styled(Card)`
+//   width: 100%;
+//   max-width: 220px;
+//   margin: 0 auto;
+//   position: relative;
+//   background-color: ${props => props.disabled ? '#ccc' : '#fff'};
+//   cursor: ${props => props.disabled ? 'not-allowed' : 'pointer'};
+
+//   img {
+//     width: 100%;
+//     height: auto;
+//     object-fit: cover;
+//   }
+// `
+
+
 export const WrapperImageStyle = styled.img`
     top: -1px;
     left: 0px;
@@ -39,14 +55,14 @@ export const WrapperReportText = styled.div`
 export const WrapperPriceText = styled.div`
     color: rgb(255,66,78);
     font-size: 16px;
-    font-weight: 500px;
+    font-weight: 500;
     margin: 6px 0 0;
 `
 
 export const WrapperDiscountText = styled.span`
     color: rgb(255,66,78);
     font-size: 12px;
-    font-weight: 500px;
+    font-weight: 500;
 `
 
 export const WrapperStyleTextSell = styled.span`

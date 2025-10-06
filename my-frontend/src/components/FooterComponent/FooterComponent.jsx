@@ -66,7 +66,7 @@ const Footer = () => {
                 <InputWrapper>
                     <EmailInput
                         type="email"
-                        placeholder="Enter your email address"
+                        placeholder="Nhập email của bạn"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                     />

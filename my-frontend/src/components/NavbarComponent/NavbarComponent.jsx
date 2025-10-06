@@ -66,7 +66,7 @@ const NavbarComponent = ({ setFilters, type }) => {
         : '';
 
     const payload = {
-      type, // ✅ giữ lại type khi lọc
+      type, 
       sizes: filters.sizes,
       colors: filters.colors,
       sort: sortValue,
@@ -104,20 +104,7 @@ const NavbarComponent = ({ setFilters, type }) => {
     </div>
   );
 
-  // const renderRatingCheckboxes = () => (
-  //   <Checkbox.Group
-  //     style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}
-  //     value={filters.rating}
-  //     onChange={handleRatingChange}
-  //   >
-  //     {[5, 4, 3, 2, 1].map((rating) => (
-  //       <Checkbox key={rating} value={rating}>
-  //         <Rate style={{ fontSize: '12px' }} disabled defaultValue={rating} />
-  //         {rating === 5 ? ' 5 sao' : ` Từ ${rating} sao`}
-  //       </Checkbox>
-  //     ))}
-  //   </Checkbox.Group>
-  // );
+  
   const renderRatingCheckboxes = () => (
     <Checkbox.Group
       style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}

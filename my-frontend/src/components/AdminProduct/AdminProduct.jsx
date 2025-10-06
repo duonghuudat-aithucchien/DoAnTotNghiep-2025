@@ -281,20 +281,6 @@ const AdminProduct = () => {
             setTimeout(() => searchInput.current?.select(), 100);
           }
         },
-        // render: (text) =>
-        //   searchedColumn === dataIndex ? (
-        //     // <Highlighter
-        //     //   highlightStyle={{
-        //     //     backgroundColor: '#ffc069',
-        //     //     padding: 0,
-        //     //   }}
-        //     //   searchWords={[searchText]}
-        //     //   autoEscape
-        //     //   textToHighlight={text ? text.toString() : ''}
-        //     // />
-        //   ) : (
-        //     text
-        //   ),
       });
 
     const columns = [
@@ -374,11 +360,7 @@ const AdminProduct = () => {
     const dataTable = products?.data?.length && products?.data?.map((product) => {
         return {...product, key: product._id}
     })
-    // const dataTable = filteredProducts?.map((product) => ({
-    //     ...product,
-    //     key: product._id,
-    //   }));
-
+    
 //create
     useEffect(() => {
         if(isSuccess && data?.status === 'OK') {
@@ -468,13 +450,7 @@ const AdminProduct = () => {
         form.resetFields()
 
     }
-    // const onFinish = () => {
-    //     mutation.mutate(stateProduct, {
-    //         onSettled: () => {
-    //            queryProduct.refetch()
-    //         }
-    //     })
-    // }
+    
     const onFinish = () => {
         const params = {
             name: stateProduct.name,
@@ -569,21 +545,6 @@ const AdminProduct = () => {
         
   return (
     <div>
-        {/* <WrapperHeader>Quản lý sản phẩm</WrapperHeader>
-        <div style={{marginTop: '10px'}}>
-            <Button style={{height: '150px', width: '150px', borderRadius: '6px', borderStyle: 'dashed'}} onClick={() => setIsModalOpen(true)}><PlusOutlined style={{fontSize: '60px'}}/></Button>
-        </div>
-        <div style={{marginTop: '20px'}}>
-            <TableComponent handleDeleteMany={handleDeleteManyProducts} columns={columns} isPending={isPendingProducts} data={dataTable}
-                onRow={(record, rowIndex) => {
-                    return {
-                        onClick: even => {
-                            setRowSelected(record._id)
-                        }
-                    }
-                }}
-            />
-        </div> */}
         <WrapperHeaderContainer>
         <WrapperHeader>Quản lý sản phẩm</WrapperHeader>
         <WrapperButtons>
@@ -637,169 +598,90 @@ const AdminProduct = () => {
                 <InputComponent value={stateProduct.name} onChange={handleOnchange} name="name"/>
                 </Form.Item>
 
-                {/* <Form.Item
-                label="Màu sắc"
-                name="colors"
-                rules={[
-                    {
-                    required: true,
-                    message: 'Please select your color!',
-                    },
-                ]}
-                >
-                <Select
-                    name="colors"
-                    value={stateProduct.colors}
-                    onChange={(value) => setStateProduct({ ...stateProduct, colors: value })}
-                    options={[
-                    ...renderOptions(['green', 'navy', 'darkslategray']),
-                    { label: 'Thêm màu mới', value: 'add_color' }
-                    ]}
-                />
-                </Form.Item>
-
-                {stateProduct.colors === 'add_color' && (
-                <Form.Item
-                    label="Màu mới"
-                    name="newColor"
-                    rules={[
-                    {
-                        required: true,
-                        message: 'Please input your new color!',
-                    },
-                    ]}
-                >
-                    <InputComponent
-                    value={stateProduct.newColor}
-                    onChange={handleOnchange}
-                    name="newColor"
-                    />
-                </Form.Item>
-                )}
-
-                {/* Kích thước */}
-                {/* <Form.Item
-                label="Kích thước"
-                name="sizes"
-                rules={[
-                    {
-                    required: true,
-                    message: 'Please select your size!',
-                    },
-                ]}
-                >
-                <Select
-                    name="sizes"
-                    value={stateProduct.sizes}
-                    onChange={(value) => setStateProduct({ ...stateProduct, sizes: value })}
-                    options={[
-                    ...renderOptions(['S', 'M', 'L', 'XL']),
-                    { label: 'Thêm size mới', value: 'add_size' }
-                    ]}
-                />
-                </Form.Item>
-
-                {stateProduct.sizes === 'add_size' && (
-                <Form.Item
-                    label="Size mới"
-                    name="newSize"
-                    rules={[
-                    {
-                        required: true,
-                        message: 'Please input your new size!',
-                    },
-                    ]}
-                >
-                    <InputComponent
-                    value={stateProduct.newSize}
-                    onChange={handleOnchange}
-                    name="newSize"
-                    />
-                </Form.Item>
-                )} */} 
+                
                 
                 <Form.Item
-  label="Màu sắc"
-  name="colors"
-  rules={[
-    {
-      required: true,
-      message: 'Please select your color!',
-    },
-  ]}
->
-  <Select
-    mode="multiple"
-    allowClear
-    value={stateProduct.colors}
-    onChange={(value) => setStateProduct({ ...stateProduct, colors: value })}
-    options={[
-      ...renderOptions(['green', 'navy', 'darkslategray']),
-      { label: 'Thêm màu mới', value: 'add_color' }
-    ]}
-  />
-</Form.Item>
+            label="Màu sắc"
+            name="colors"
+            rules={[
+                {
+                required: true,
+                message: 'Please select your color!',
+                },
+            ]}
+            >
+            <Select
+                mode="multiple"
+                allowClear
+                value={stateProduct.colors}
+                onChange={(value) => setStateProduct({ ...stateProduct, colors: value })}
+                options={[
+                ...renderOptions(['green', 'navy', 'darkslategray']),
+                { label: 'Thêm màu mới', value: 'add_color' }
+                ]}
+            />
+            </Form.Item>
 
-{stateProduct.colors?.includes('add_color') && (
-  <Form.Item
-    label="Màu mới"
-    name="newColor"
-    rules={[
-      {
-        required: true,
-        message: 'Please input your new color!',
-      },
-    ]}
-  >
-    <InputComponent
-      value={stateProduct.newColor}
-      onChange={handleOnchange}
-      name="newColor"
-    />
-  </Form.Item>
-)}
+            {stateProduct.colors?.includes('add_color') && (
+            <Form.Item
+                label="Màu mới"
+                name="newColor"
+                rules={[
+                {
+                    required: true,
+                    message: 'Please input your new color!',
+                },
+                ]}
+            >
+                <InputComponent
+                value={stateProduct.newColor}
+                onChange={handleOnchange}
+                name="newColor"
+                />
+            </Form.Item>
+            )}
 
 
-                <Form.Item
-  label="Kích thước"
-  name="sizes"
-  rules={[
-    {
-      required: true,
-      message: 'Please select your size!',
-    },
-  ]}
->
-  <Select
-    mode="multiple"
-    allowClear
-    value={stateProduct.sizes}
-    onChange={(value) => setStateProduct({ ...stateProduct, sizes: value })}
-    options={[
-      ...renderOptions(['S', 'M', 'L', 'XL']),
-      { label: 'Thêm size mới', value: 'add_size' }
-    ]}
-  />
-</Form.Item>
+                            <Form.Item
+            label="Kích thước"
+            name="sizes"
+            rules={[
+                {
+                required: true,
+                message: 'Please select your size!',
+                },
+            ]}
+            >
+            <Select
+                mode="multiple"
+                allowClear
+                value={stateProduct.sizes}
+                onChange={(value) => setStateProduct({ ...stateProduct, sizes: value })}
+                options={[
+                ...renderOptions(['S', 'M', 'L', 'XL']),
+                { label: 'Thêm size mới', value: 'add_size' }
+                ]}
+            />
+            </Form.Item>
 
-{stateProduct.sizes?.includes('add_size') && (
-  <Form.Item
-    label="Size mới"
-    name="newSize"
-    rules={[
-      {
-        required: true,
-        message: 'Please input your new size!',
-      },
-    ]}
-  >
-    <InputComponent
-      value={stateProduct.newSize}
-      onChange={handleOnchange}
-      name="newSize"
-    />
-  </Form.Item>
-)}
+            {stateProduct.sizes?.includes('add_size') && (
+            <Form.Item
+                label="Size mới"
+                name="newSize"
+                rules={[
+                {
+                    required: true,
+                    message: 'Please input your new size!',
+                },
+                ]}
+            >
+                <InputComponent
+                value={stateProduct.newSize}
+                onChange={handleOnchange}
+                name="newSize"
+                />
+            </Form.Item>
+            )}
 
 
                 <Form.Item
@@ -925,40 +807,40 @@ const AdminProduct = () => {
                 </Form.Item>
 
                 <Form.Item
-  label="Hình ảnh nhỏ"
-  name="subImages"
-  rules={[
-    {
-      required: false,
-      message: 'Please upload sub-images!',
-    },
-  ]}
->
-  <WrapperUploadFile
-    onChange={handleOnchangeSubImages}
-    multiple
-    maxCount={3} // Giới hạn số lượng hình ảnh nhỏ
-  >
-    <Button icon={<UploadOutlined />}>Upload Sub-Images</Button>
-  </WrapperUploadFile>
-  {stateProduct?.subImages?.length > 0 && (
-    <div style={{ marginTop: '10px', display: 'flex', gap: '10px' }}>
-      {stateProduct.subImages.map((image, index) => (
-        <img
-          key={index}
-          src={image}
-          alt={`subImage-${index}`}
-          style={{
-            height: '60px',
-            width: '60px',
-            borderRadius: '6px',
-            objectFit: 'cover',
-          }}
-        />
-      ))}
-    </div>
-  )}
-</Form.Item>
+            label="Hình ảnh nhỏ"
+            name="subImages"
+            rules={[
+                {
+                required: false,
+                message: 'Please upload sub-images!',
+                },
+            ]}
+            >
+            <WrapperUploadFile
+                onChange={handleOnchangeSubImages}
+                multiple
+                maxCount={3} // Giới hạn số lượng hình ảnh nhỏ
+            >
+                <Button icon={<UploadOutlined />}>Upload Sub-Images</Button>
+            </WrapperUploadFile>
+            {stateProduct?.subImages?.length > 0 && (
+                <div style={{ marginTop: '10px', display: 'flex', gap: '10px' }}>
+                {stateProduct.subImages.map((image, index) => (
+                    <img
+                    key={index}
+                    src={image}
+                    alt={`subImage-${index}`}
+                    style={{
+                        height: '60px',
+                        width: '60px',
+                        borderRadius: '6px',
+                        objectFit: 'cover',
+                    }}
+                    />
+                ))}
+                </div>
+            )}
+            </Form.Item>
 
 
 

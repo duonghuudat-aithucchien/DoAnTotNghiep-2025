@@ -156,61 +156,6 @@ const deleteManyProduct = (ids) => {
     })
 }
 
-// const getAllProduct = (limit, page, sort, filter) => {
-//     return new Promise(async (resolve, reject) => {
-
-//         try {
-//             const totalProduct = await Product.countDocuments()
-//             let allProduct = []
-//             if(filter) {
-//                 const label = filter[0]
-//                 const allObjectFilter = await Product.find({ [label]: { '$regex': filter[1]}}).limit(limit).skip(page * limit)
-//                 resolve({
-//                     status: 'OK',
-//                     message: 'SUCCESS',
-//                     data: allObjectFilter,
-//                     total: totalProduct,
-//                     pageCurrent: Number(page + 1),
-//                     totalPage: Math.ceil(totalProduct / limit)
-                         
-//                 })
-//             }
-//             if (sort) {
-//                 const objectSort = {}
-//                 objectSort[ sort[1]] = sort[0]
-//                 const allProductSort = await Product.find().limit(limit).skip(page * limit).sort(objectSort)
-//                 resolve({
-//                     status: 'OK',
-//                     message: 'SUCCESS',
-//                     data: allProductSort,
-//                     total: totalProduct,
-//                     pageCurrent: Number(page + 1),
-//                     totalPage: Math.ceil(totalProduct / limit)
-                         
-//                 })
-//             }
-//             if(!limit) {
-//                 allProduct = await Product.find()
-//             } else {
-//                 allProduct = await Product.find().limit(limit).skip(page * limit)
-//             }
-//             resolve({
-//                 status: 'OK',
-//                 message: 'SUCCESS',
-//                 data: allProduct,
-//                 total: totalProduct,
-//                 pageCurrent: Number(page + 1),
-//                 totalPage: Math.ceil(totalProduct / limit)
-                     
-//             })
-//             //
-            
-//         } catch (e) {
-//             reject(e)
-//         }
-//     })
-// }
-
 const getAllProduct = (limit, page, sort, filter) => {
     return new Promise(async (resolve, reject) => {
       try {
@@ -269,6 +214,45 @@ const getAllProduct = (limit, page, sort, filter) => {
       }
     })
   }
+
+// const getAllProduct = (limit = 10, page = 0, sort, filter) => {
+//   return new Promise(async (resolve, reject) => {
+//     try {
+//       const query = {};
+//       if (filter && filter.length === 2) {
+//         query[filter[0]] = { $regex: filter[1], $options: 'i' };
+//       }
+
+//       const totalProduct = await Product.countDocuments(query);
+
+//       let productsQuery = Product.find(query)
+//         .select('name price image rating') // Giới hạn field
+//         .limit(limit)
+//         .skip(page * limit)
+//         .lean();
+
+//       if (sort && sort.length === 2) {
+//         const sortQuery = {};
+//         sortQuery[sort[1]] = sort[0]; // e.g. { price: 'asc' }
+//         productsQuery = productsQuery.sort(sortQuery);
+//       }
+
+//       const allProduct = await productsQuery;
+
+//       resolve({
+//         status: 'OK',
+//         message: 'SUCCESS',
+//         data: allProduct,
+//         total: totalProduct,
+//         pageCurrent: Number(page + 1),
+//         totalPage: Math.ceil(totalProduct / limit),
+//       });
+//     } catch (e) {
+//       reject(e);
+//     }
+//   });
+// };
+
   
 
 const getAllType = () => {
@@ -314,59 +298,134 @@ const getDetailProduct = (id) => {
     })
 }
 
-const getProductByType = (type, limit = 6) => {
-    return new Promise(async (resolve, reject) => {
-      try {
-        const products = await Product.find({ type }).limit(limit)
-        resolve({
-          status: 'OK',
-          message: 'SUCCESS',
-          data: products
-        })
-      } catch (e) {
-        reject({
-          status: 'ERR',
-          message: e.message
-        })
-      }
-    })
-  }
+// const getProductByType = (type, limit = 6) => {
+//     return new Promise(async (resolve, reject) => {
+//       try {
+//         const products = await Product.find({ type }).limit(limit)
+//         resolve({
+//           status: 'OK',
+//           message: 'SUCCESS',
+//           data: products
+//         })
+//       } catch (e) {
+//         reject({
+//           status: 'ERR',
+//           message: e.message
+//         })
+//       }
+//     })
+//   }
+
+const getProductByType = (type, page = 0, limit = 10) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const totalProduct = await Product.countDocuments({ type })
+      const products = await Product.find({ type })
+        .skip(page * limit)
+        .limit(limit)
+
+      resolve({
+        status: 'OK',
+        message: 'SUCCESS',
+        data: products,
+        totalProduct,
+        totalPage: Math.ceil(totalProduct / limit),
+        pageCurrent: Number(page + 1)
+      })
+    } catch (e) {
+      reject({
+        status: 'ERR',
+        message: e.message
+      })
+    }
+  })
+}
+
+
   
-  const getTopSellingProducts = (limit = 5) => {
-    return new Promise(async (resolve, reject) => {
-      try {
-        const products = await Product.find().sort({ selled: -1 }).limit(limit);
-        resolve({
-          status: 'OK',
-          message: 'SUCCESS',
-          data: products,
-        });
-      } catch (e) {
-        reject({
-          status: 'ERR',
-          message: e.message,
-        });
-      }
-    });
-  };
+//   const getTopSellingProducts = (limit = 5) => {
+//     return new Promise(async (resolve, reject) => {
+//       try {
+//         const products = await Product.find().sort({ selled: -1 }).limit(limit);
+//         resolve({
+//           status: 'OK',
+//           message: 'SUCCESS',
+//           data: products,
+//         });
+//       } catch (e) {
+//         reject({
+//           status: 'ERR',
+//           message: e.message,
+//         });
+//       }
+//     });
+//   };
+
+const getTopSellingProducts = (limit = 5) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const products = await Product.find()
+        .sort({ selled: -1 })
+        .limit(limit)
+        .select('name image price rating discount selled') // giới hạn field
+        .lean(); // tối ưu hiệu suất
+
+      resolve({
+        status: 'OK',
+        message: 'SUCCESS',
+        data: products,
+      });
+    } catch (e) {
+      reject({
+        status: 'ERR',
+        message: e.message,
+      });
+    }
+  });
+};
+
   
-  const getTopNewProducts = (limit = 5) => {
-    return new Promise(async (resolve, reject) => {
-      try {
-        const products = await Product.find().sort({ createdAt: -1 }).limit(limit);
-        resolve({
-          status: 'OK',
-          message: 'SUCCESS',
-          data: products,
-        });
-      } catch (e) {
-        reject({
-          status: 'ERR',
-          message: e.message,
-        });
-      }
-    });
-  };
+//   const getTopNewProducts = (limit = 5) => {
+//     return new Promise(async (resolve, reject) => {
+//       try {
+//         const products = await Product.find().sort({ createdAt: -1 }).limit(limit);
+//         resolve({
+//           status: 'OK',
+//           message: 'SUCCESS',
+//           data: products,
+//         });
+//       } catch (e) {
+//         reject({
+//           status: 'ERR',
+//           message: e.message,
+//         });
+//       }
+//     });
+//   };
+
+const getTopNewProducts = (limit = 5) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const products = await Product.find()
+        .sort({ createdAt: -1 })
+        .limit(limit)
+        .select('name image price rating discount selled createdAt') // chỉ field cần thiết
+        .lean();
+
+      resolve({
+        status: 'OK',
+        message: 'SUCCESS',
+        data: products,
+      });
+    } catch (e) {
+      reject({
+        status: 'ERR',
+        message: e.message,
+      });
+    }
+  });
+};
+
 
 const addReview = (productId, userId, rating, comment) => {
     return new Promise(async (resolve, reject) => {

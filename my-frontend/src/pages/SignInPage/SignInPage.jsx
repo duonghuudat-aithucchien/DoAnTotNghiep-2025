@@ -13,7 +13,7 @@ import Loading from '../../components/LoadingComponent/Loading'
 import { jwtDecode } from 'jwt-decode';
 import { useDispatch } from 'react-redux'
 import { updateUser } from '../../redux/slides/userSlide'
-
+import { loadCartFromLocal } from '../../redux/slides/orderSlide'
 
 const SignInPage = () => {
   const [isShowPassword, setIsShowPassword] = useState(false)
@@ -34,23 +34,54 @@ const SignInPage = () => {
     dispatch(updateUser({...res?.data, access_token: token}))
   }, [dispatch])
 
+  // useEffect(() => {
+  //   if(isSuccess) {
+  //     if(location?.state) {
+  //       navigate(location?.state)
+  //     } else {
+  //       navigate('/')
+  //     }
+  //     localStorage.setItem('access_token', JSON.stringify(data?.access_token))
+  //     if(data?.access_token) {
+  //       const decoded = jwtDecode(data?.access_token)
+  //       console.log('decode', decoded)
+  //       if(decoded?.id) {
+  //         handleGetDetailsUser(decoded?.id, data?.access_token)
+  //       }
+  //     }
+  //   }
+  // }, [isSuccess, data?.access_token, handleGetDetailsUser, navigate])
+
   useEffect(() => {
-    if(isSuccess) {
-      if(location?.state) {
-        navigate(location?.state)
-      } else {
-        navigate('/')
-      }
-      localStorage.setItem('access_token', JSON.stringify(data?.access_token))
-      if(data?.access_token) {
-        const decoded = jwtDecode(data?.access_token)
-        console.log('decode', decoded)
-        if(decoded?.id) {
-          handleGetDetailsUser(decoded?.id, data?.access_token)
+  const redirectAfterLogin = async () => {
+    if (isSuccess && data?.access_token) {
+      localStorage.setItem('access_token', JSON.stringify(data.access_token));
+
+      const decoded = jwtDecode(data.access_token);
+      console.log("🪪 decoded token after login:", decoded);
+
+      if (decoded?.id) {
+        await handleGetDetailsUser(decoded.id, data.access_token);
+        dispatch(loadCartFromLocal(decoded.id));
+
+        // ✅ Ép kiểu rõ ràng isAdmin
+        const isAdmin = decoded?.isAdmin === 'true' || decoded?.isAdmin === true;
+
+        if (isAdmin) {
+          navigate('/system/admin');
+        } else if (location?.state) {
+          navigate(location.state);
+        } else {
+          navigate('/');
         }
       }
     }
-  }, [isSuccess, data?.access_token, handleGetDetailsUser, navigate])
+  };
+
+  redirectAfterLogin();
+}, [isSuccess, data?.access_token, handleGetDetailsUser, navigate, location?.state]);
+
+
 
 
 

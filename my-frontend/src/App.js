@@ -10,6 +10,7 @@ import { updateUser } from './redux/slides/userSlide'
 import Loading from './components/LoadingComponent/Loading'
 import ChatbotWidget from "./components/Chatbot/ChatbotWidget";
 import Footer from './components/FooterComponent/FooterComponent'
+import { Navigate } from 'react-router-dom';
 
 // import axios from 'axios';
 // import { useQuery } from '@tanstack/react-query';
@@ -18,7 +19,8 @@ function App() {
   const dispatch = useDispatch()
   const [isPending, setIspending] = useState(false)
   const user = useSelector((state) => state.user)
-  
+  const [isReady, setIsReady] = useState(false);
+
   
 
   // const handleDecoded = () => {
@@ -35,6 +37,7 @@ function App() {
 
   const handleDecoded = useCallback(() => {
     let storageData = localStorage.getItem('access_token');
+    // let storageData = sessionStorage.getItem('access_token');
     if (!storageData || !isJsonString(storageData)) {
       return { storageData: null, decoded: null };
     }
@@ -66,15 +69,26 @@ function App() {
   );
   
 
+  // useEffect(() => {
+  //   setIspending(true)
+  //   const { storageData, decoded } = handleDecoded()
+  //   if (decoded?.id) {
+  //     handleGetDetailsUser(decoded?.id, storageData)
+  //   } else {
+  //     setIspending(false);
+  //   }
+  // }, [handleDecoded, handleGetDetailsUser])
   useEffect(() => {
-    setIspending(true)
-    const { storageData, decoded } = handleDecoded()
-    if (decoded?.id) {
-      handleGetDetailsUser(decoded?.id, storageData)
-    } else {
-      setIspending(false);
-    }
-  }, [handleDecoded, handleGetDetailsUser])
+  const { storageData, decoded } = handleDecoded();
+  if (decoded?.id) {
+    handleGetDetailsUser(decoded.id, storageData).finally(() => {
+      setIsReady(true); // ✅ sau khi get xong thì cho phép render routes
+    });
+  } else {
+    setIsReady(true); // ✅ vẫn render nếu không có token
+  }
+}, [handleDecoded, handleGetDetailsUser]);
+
   
 
   UserSerVice.axiosJWT.interceptors.request.use(async (config) => {
@@ -101,33 +115,47 @@ function App() {
   // console.log('query', query)
 
   return (
-    <div style={{height: '100vh', width: '100%'}}>
-      <Loading isPending={isPending} style={{background: '#ccc'}}>
-        <Router>
-      <Routes>
-        {routes.map((route) => {
-          const Page = route.page;
-          const ischeckAuth =!route.isPrivate || user.isAdmin
-          const Layout = route.isShowHeader ? DefaultComponent : Fragment;
-          return (
-            <Route
-              key={route.path}
-              path={route.path}
-              element={
+  <div style={{ height: '100vh', width: '100%' }}>
+    <Loading isPending={isPending} style={{ background: '#ccc' }}>
+      <Router>
+  {isReady ? (
+    <Routes>
+      {routes.map((route) => {
+        const Page = route.page;
+        const Layout = route.isShowHeader ? DefaultComponent : Fragment;
+        const isAdminRoute = route.isPrivate;
+        const isAdmin = user?.isAdmin === true || user?.isAdmin === 'true';
+        const allowAccess = !isAdminRoute || isAdmin;
+
+        return (
+          <Route
+            key={route.path}
+            path={route.path}
+            element={
+              allowAccess ? (
                 <Layout>
                   <Page />
-                  {route.isShowFooter && <Footer />} {/* Hiển thị Footer nếu isShowFooter = true */}
+                  {route.isShowFooter && <Footer />}
                 </Layout>
-              }
-            />
-          );
-        })}
-      </Routes>
-        </Router>
-      </Loading>
-      <ChatbotWidget /> {/* Đổi từ Chatbot -> ChatbotWidget */}
-    </div>
-  );
+              ) : (
+                <Navigate to="/not-found" replace />
+              )
+            }
+          />
+        );
+      })}
+    </Routes>
+  ) : (
+    <Loading isPending={true} />
+  )}
+</Router>
+
+
+    </Loading>
+    <ChatbotWidget />
+  </div>
+);
+
 }
 
 export default App

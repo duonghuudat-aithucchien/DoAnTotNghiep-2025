@@ -8,11 +8,8 @@ import * as OrderService from '../../service/OrderService'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useSelector } from 'react-redux'
 import { orderContant } from '../../contant'
-import PieChartComponent from './PieChartComponent'
-import BarChartComponent from './BarChartComponent'
 import OrderStatusUpdater from './OrderStatusUpdater'
 import { useMemo } from 'react'
-import ProductTypePieChart from './ProductTypePieChart '
 import { format } from 'date-fns';
 
 const OrderAdmin = ({ onOrderUpdate }) => {
@@ -103,18 +100,7 @@ const OrderAdmin = ({ onOrderUpdate }) => {
       sorter: (a, b) => a.userName.length - b.userName.length,
       ...getColumnSearchProps('userName'),
     },
-    // {
-    //   title: 'Tên sản phẩm',
-    //   dataIndex: 'itemName',
-    //   sorter: (a, b) => a.itemName.length - b.itemName.length,
-    //   ...getColumnSearchProps('itemName'),
-    // },
-    // {
-    //   title: 'Điện thoại',
-    //   dataIndex: 'phone',
-    //   sorter: (a, b) => a.phone.length - b.phone.length,
-    //   ...getColumnSearchProps('phone'),
-    // },
+    
     {
       title: 'Ngày đặt hàng',
       dataIndex: 'createdAt',
@@ -122,36 +108,14 @@ const OrderAdmin = ({ onOrderUpdate }) => {
       render: (date) => format(new Date(date), 'dd/MM/yyyy HH:mm:ss'),
       ...getColumnSearchProps('createdAt'),
     },
-    // {
-    //   title: 'Địa chỉ',
-    //   dataIndex: 'address',
-    //   sorter: (a, b) => a.address.length - b.address.length,
-    //   ...getColumnSearchProps('address'),
-    // },
-    // {
-    //   title: 'Giá sản phẩm',
-    //   dataIndex: 'itemsPrice',
-    //   sorter: (a, b) => a.itemsPrice.length - b.itemsPrice.length,
-    //   ...getColumnSearchProps('itemsPrice'),
-    // },
-    // {
-    //   title: 'Giá vận chuyển',
-    //   dataIndex: 'shippingPrice',
-    //   sorter: (a, b) => a.shippingPrice.length - b.shippingPrice.length,
-    //   ...getColumnSearchProps('shippingPrice'),
-    // },
+    
     {
       title: 'Trạng thái thanh toán',
       dataIndex: 'isPaid',
       sorter: (a, b) => a.isPaid.length - b.isPaid.length,
       ...getColumnSearchProps('isPaid'),
     },
-    // {
-    //   title: 'Trạng thái giao hàng',
-    //   dataIndex: 'isDelivered',
-    //   sorter: (a, b) => a.isDelivered.length - b.isDelivered.length,
-    //   ...getColumnSearchProps('isDelivered'),
-    // },
+    
     {
       title: 'Trạng thái đơn hàng',
       dataIndex: 'status',

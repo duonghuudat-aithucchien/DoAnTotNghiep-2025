@@ -30,7 +30,7 @@ const sendEmailCreateOrder = async (email, orderItems) => {
         from: process.env.MAIL_ACCOUNT, // sender address
         to: "huudatcrypto1607@gmail.com", // list of receivers
         subject: "Bạn đã đặt hàng thành công", // Subject line
-        text: "Hello world?", // plain text body
+        text: "🛍️ Xác nhận đơn hàng từ FashionStyle", // plain text body
         html: `<div><b>Bạn đã đặt hàng thành công tại shop</b></div>${listItem}`,
         attachments: attachImage,
     });

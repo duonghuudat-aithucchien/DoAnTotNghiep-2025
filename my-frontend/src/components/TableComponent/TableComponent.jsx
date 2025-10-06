@@ -72,7 +72,8 @@ const TableComponent = (props) => {
   
     excel
       .addSheet("Danh sách")
-      .addColumns(newColumnExport)
+      // .addColumns(newColumnExport)
+      .addColumns(props.exportColumns || newColumnExport)
       .addDataSource(dataExport, {
         str2Percent: true,
       })

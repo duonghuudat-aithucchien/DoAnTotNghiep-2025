@@ -3,15 +3,14 @@ import { useQuery } from '@tanstack/react-query';
 import * as OrderService from '../../service/OrderService';
 import Loading from '../../components/LoadingComponent/Loading';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { 
-  WrapperContainer, 
-  WrapperFooterItem, 
-  WrapperHeaderItem, 
-  WrapperListOrder, 
+import {
+  WrapperContainer,
+  WrapperFooterItem,
+  WrapperHeaderItem,
+  WrapperListOrder,
   WrapperStatus,
   OrderHeader,
   EmptyOrders,
-  PaginationWrapper,
   PageHeader,
   OrderCard,
   ProductsList,
@@ -19,8 +18,10 @@ import {
 } from './style';
 import ButtonComponent from '../../components/ButtonComponent/ButtonComponent';
 import { convertPrice } from '../../utils';
-import { message, Pagination, Divider, Tag } from 'antd';
+import { message, Pagination, Divider, Tag, Modal, Select } from 'antd';
 import { useMutationHooks } from '../../hooks/useMutationHook';
+
+const { Option } = Select;
 
 const MyOrderPage = () => {
   const location = useLocation();
@@ -29,6 +30,10 @@ const MyOrderPage = () => {
 
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
+
+  const [selectedOrder, setSelectedOrder] = useState(null);
+  const [cancelReason, setCancelReason] = useState('');
+  const [showCancelModal, setShowCancelModal] = useState(false);
 
   const fetchMyOrder = async () => {
     const res = await OrderService.getOrderbyUserId(state?.id, state?.token);
@@ -43,6 +48,18 @@ const MyOrderPage = () => {
 
   const { isPending, data } = queryOrder;
 
+  const mutation = useMutationHooks((data) => {
+    const { id, token, orderItems, reason } = data;
+    return OrderService.cancelOrder(id, token, orderItems, reason);
+  });
+
+  const {
+    isPending: isPendingCancle,
+    isSuccess: isSuccessCancle,
+    isError: isErrorCancle,
+    data: dataCancle
+  } = mutation;
+
   const handleDetaisOrder = (id) => {
     navigate(`/details-order/${id}`, {
       state: {
@@ -51,24 +68,33 @@ const MyOrderPage = () => {
     });
   };
 
-  const mutation = useMutationHooks((data) => {
-    const { id, token, orderItems } = data;
-    const res = OrderService.cancelOrder(id, token, orderItems);
-    return res;
-  });
+  const handleCancleOrder = (order) => {
+    setSelectedOrder(order);
+    setShowCancelModal(true);
+  };
 
-  const handleCancleOrder = (list) => {
+  const handleConfirmCancel = () => {
+    if (!selectedOrder || !cancelReason) {
+      return message.warning('Vui lòng chọn lý do huỷ đơn hàng!');
+    }
+
     mutation.mutate(
-      { id: list._id, token: state?.token, orderItems: list?.orderItems },
+      {
+        id: selectedOrder._id,
+        token: state?.token,
+        orderItems: selectedOrder?.orderItems,
+        reason: cancelReason,
+      },
       {
         onSuccess: () => {
           queryOrder.refetch();
+          setShowCancelModal(false);
+          setCancelReason('');
+          setSelectedOrder(null);
         },
       }
     );
   };
-
-  const { isPending: isPendingCancle, isSuccess: isSuccessCancle, isError: isErrorCancle, data: dataCancle } = mutation;
 
   useEffect(() => {
     if (isSuccessCancle && dataCancle?.status === 'OK') {
@@ -78,7 +104,6 @@ const MyOrderPage = () => {
     }
   }, [isErrorCancle, isSuccessCancle, dataCancle]);
 
-  // Tính toán các đơn hàng cần hiển thị trên trang hiện tại
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
   const currentOrders = data?.slice(startIndex, endIndex);
@@ -98,11 +123,8 @@ const MyOrderPage = () => {
             overflow: 'hidden',
             backgroundColor: '#fff'
           }}>
-            {/* Header với Tiêu đề và phân trang */}
             <PageHeader>
               <h2>Đơn hàng của tôi</h2>
-              
-              {/* Phân trang ở trên */}
               {Array.isArray(data) && data.length > itemsPerPage && (
                 <Pagination
                   current={currentPage}
@@ -114,13 +136,11 @@ const MyOrderPage = () => {
               )}
             </PageHeader>
 
-            {/* Danh sách đơn hàng */}
             <div style={{ padding: '8px 16px', backgroundColor: '#f9f9f9' }}>
               <WrapperListOrder>
                 {Array.isArray(currentOrders) && currentOrders.length > 0 ? (
                   currentOrders.map((list, index) => (
                     <OrderCard key={list._id} isLast={index === currentOrders.length - 1}>
-                      {/* Header của đơn hàng */}
                       <OrderHeader>
                         <div className="order-id">
                           <span className="id-label" style={{ fontSize: 18 }}>Mã đơn:</span>
@@ -138,24 +158,16 @@ const MyOrderPage = () => {
                         </WrapperStatus>
                       </OrderHeader>
 
-                      {/* Danh sách sản phẩm */}
                       <ProductsList>
                         {list?.orderItems?.map((order, idx) => (
                           <div key={order._id}>
                             <WrapperHeaderItem>
-                              <img
-                                src={order?.image}
-                                alt={order?.name}
-                              />
+                              <img src={order?.image} alt={order?.name} />
                               <div className="product-info-container" style={{ flex: 1 }}>
                                 <div className="product-info">{order?.name}</div>
                                 <div className="product-meta">
-                                  {order?.sizes && (
-                                    <span>Size: {order?.sizes}</span>
-                                  )}
-                                  {order?.colors && (
-                                    <span>Màu: {order?.colors}</span>
-                                  )}
+                                  {order?.sizes && <span>Size: {order?.sizes}</span>}
+                                  {order?.colors && <span>Màu: {order?.colors}</span>}
                                   <span>Số lượng: {order?.amount}</span>
                                 </div>
                               </div>
@@ -170,61 +182,59 @@ const MyOrderPage = () => {
                         ))}
                       </ProductsList>
 
-                      {/* Footer của đơn hàng */}
                       <WrapperFooterItem>
-  <div>
-    <span className="total-label" style={{ fontSize: 18 }}>Tổng tiền:</span>
-    <span className="total-price" style={{ fontSize: 18 }}>
-      {convertPrice(list?.totalPrice)}
-    </span>
-  </div>
-  <div className="actions" style={{ display: 'flex', gap: '12px' }}>
-    {/* Hiển thị nút "Huỷ đơn hàng" nếu đơn hàng chưa giao và chưa thanh toán */}
-    {!list?.isDelivered && !list?.isPaid && (
-      <ButtonComponent
-        onClick={() => handleCancleOrder(list)}
-        size={40}
-        styleButton={{
-          backgroundColor: '#fff',
-          border: '1px solid #ff4d4f',
-          borderRadius: 6,
-          height: 36,
-          padding: '0 16px',
-          minWidth: '100px',
-        }}
-        textButton="Huỷ đơn hàng"
-        styleTextButton={{
-          color: '#ff4d4f',
-          fontSize: 14,
-          fontWeight: 500,
-          textAlign: 'center',
-        }}
-      />
-    )}
-    <ButtonComponent
-      onClick={() => handleDetaisOrder(list?._id)}
-      size={40}
-      styleButton={{
-        backgroundColor: 'blue',
-        border: '1px solid #1890ff',
-        borderRadius: 6,
-        height: 36,
-        padding: '0 16px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        minWidth: '100px',
-      }}
-      textButton="Xem chi tiết"
-      styleTextButton={{
-        color: '#fff',
-        fontSize: 14,
-        fontWeight: 500,
-        textAlign: 'center',
-      }}
-    />
-  </div>
-</WrapperFooterItem>
+                        <div>
+                          <span className="total-label" style={{ fontSize: 18 }}>Tổng tiền:</span>
+                          <span className="total-price" style={{ fontSize: 18 }}>
+                            {convertPrice(list?.totalPrice)}
+                          </span>
+                        </div>
+                        <div className="actions" style={{ display: 'flex', gap: '12px' }}>
+                          {!list?.isDelivered && !list?.isPaid && (
+                            <ButtonComponent
+                              onClick={() => handleCancleOrder(list)}
+                              size={40}
+                              styleButton={{
+                                backgroundColor: '#fff',
+                                border: '1px solid #ff4d4f',
+                                borderRadius: 6,
+                                height: 36,
+                                padding: '0 16px',
+                                minWidth: '100px',
+                              }}
+                              textButton="Huỷ đơn hàng"
+                              styleTextButton={{
+                                color: '#ff4d4f',
+                                fontSize: 14,
+                                fontWeight: 500,
+                                textAlign: 'center',
+                              }}
+                            />
+                          )}
+                          <ButtonComponent
+                            onClick={() => handleDetaisOrder(list?._id)}
+                            size={40}
+                            styleButton={{
+                              backgroundColor: 'blue',
+                              border: '1px solid #1890ff',
+                              borderRadius: 6,
+                              height: 36,
+                              padding: '0 16px',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              minWidth: '100px',
+                            }}
+                            textButton="Xem chi tiết"
+                            // styleTextButton={{
+                            //   color: '#fff',
+                            //   fontSize: 14,
+                            //   fontWeight: 500,
+                            //   textAlign: 'center',
+                            // }}
+                          />
+                        </div>
+                      </WrapperFooterItem>
                     </OrderCard>
                   ))
                 ) : (
@@ -234,25 +244,37 @@ const MyOrderPage = () => {
                 )}
               </WrapperListOrder>
             </div>
-
-            {/* Phân trang ở dưới */}
-            {/* {Array.isArray(data) && data.length > itemsPerPage && (
-              <PaginationWrapper>
-                <Pagination
-                  current={currentPage}
-                  pageSize={itemsPerPage}
-                  total={data.length}
-                  onChange={handlePageChange}
-                />
-              </PaginationWrapper>
-            )} */}
           </div>
         </OrderContainer>
+
+        {/* Modal chọn lý do huỷ */}
+        <Modal
+          title="Chọn lý do huỷ đơn hàng"
+          open={showCancelModal}
+          onOk={handleConfirmCancel}
+          onCancel={() => {
+            setShowCancelModal(false);
+            setSelectedOrder(null);
+            setCancelReason('');
+          }}
+          okText="Xác nhận huỷ"
+          cancelText="Thoát"
+        >
+          <Select
+            style={{ width: '100%' }}
+            placeholder="Chọn lý do huỷ đơn hàng"
+            value={cancelReason}
+            onChange={(value) => setCancelReason(value)}
+          >
+            <Option value="Thay đổi ý định">Thay đổi ý định</Option>
+            <Option value="Đặt nhầm">Đặt nhầm</Option>
+            <Option value="Tìm được giá tốt hơn">Tìm được giá tốt hơn</Option>
+            <Option value="Khác">Khác</Option>
+          </Select>
+        </Modal>
       </WrapperContainer>
     </Loading>
   );
 };
 
 export default MyOrderPage;
-
-

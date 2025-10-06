@@ -1,37 +1,28 @@
 
 import React, { useEffect, useState, Suspense } from 'react'
-import TypeProduct from '../../components/TypeProduct/TypeProduct'
 import {
   WrapperButtonMore,
   WrapperProducts,
-  WrapperTypeProduct,
   WrapperSection,
   SectionTitle,
-  ArrowButton
+  WrapperProductsSearch,
 } from './style'
 import SliderComponent from '../../components/SliderComponent/SliderComponent'
 import slider4 from '../../assets/images/slider4.svg'
-
 import CardComponent from '../../components/CardComponent/CardComponent'
 import * as ProductService from '../../service/ProductService'
 import { useQuery } from '@tanstack/react-query'
 import { useSelector } from 'react-redux'
 import Loading from '../../components/LoadingComponent/Loading'
 import { useDebounce } from '../../hooks/useDebounce'
-import { useNavigate } from 'react-router-dom'
-import ButtonComponent from '../../components/ButtonComponent/ButtonComponent'
 import ProductScrollWithArrows from './ProductScrollWithArrows';
-import FlashSaleCountdown from './FlashSaleCountdown';
-
 const FlashSaleCountdown1 = React.lazy(() => import('./FlashSaleCountdown'));
-
 
 const HomePage = () => {
   const searchProduct = useSelector((state) => state?.product?.search)
   const searchDebounce = useDebounce(searchProduct, 500)
   const [limit, setLimit] = useState(5)
   const [typeProducts, setTypeProducts] = useState([])
-  const navigate = useNavigate()
   const [productLimits, setProductLimits] = useState({})
   const [productsByType, setProductsByType] = useState({})
   const [loadingTypes, setLoadingTypes] = useState({})
@@ -39,14 +30,9 @@ const HomePage = () => {
   const [searchResults, setSearchResults] = useState([])
   const [searchAllLoaded, setSearchAllLoaded] = useState(false)
   const [fetchKey, setFetchKey] = useState(0) // Trigger reload products
-  const [loading, setLoading] = useState(false)
   const [topSelling, setTopSelling] = useState([])
   const [topNew, setTopNew] = useState([])
-  const [topSellingLimit, setTopSellingLimit] = useState(5)
-  const [topNewLimit, setTopNewLimit] = useState(5)
   const [flashSaleProducts, setFlashSaleProducts] = useState([]);
-
-
 
   const fetchProductAll = async ({ queryKey }) => {
     const [, , search] = queryKey
@@ -80,7 +66,7 @@ const HomePage = () => {
       setTypeProducts(res?.data)
       const initialLimits = {}
       res?.data.forEach(type => {
-        initialLimits[type] = 5
+        initialLimits[type] = 6
       })
       setProductLimits(initialLimits)
     }
@@ -116,7 +102,9 @@ const HomePage = () => {
     const fetchProducts = async () => {
       for (const type of typeProducts) {
         setLoadingTypes(prev => ({ ...prev, [type]: true }))
-        const res = await ProductService.getProductByType(type, 9999)
+        // const res = await ProductService.getProductByType(type, 9999)
+        const res = await ProductService.getProductByType(type, productLimits[type] || 6)
+
         setLoadingTypes(prev => ({ ...prev, [type]: false }))
 
         const fullProducts = res?.data || []
@@ -127,7 +115,7 @@ const HomePage = () => {
         }))
 
         setAllLoaded(prev => {
-          const limit = productLimits[type] || 5
+          const limit = productLimits[type] || 6
           return {
             ...prev,
             [type]: limit >= fullProducts.length
@@ -141,37 +129,64 @@ const HomePage = () => {
     }
   }, [typeProducts, productLimits, searchDebounce, fetchKey])
 
+ 
+
   useEffect(() => {
     if (searchData?.data) {
-      setSearchResults(searchData.data.slice(0, 5))
-      setSearchAllLoaded(searchData.data.length <= 5)
+      setSearchResults(searchData.data.slice(0, 6))
+      setSearchAllLoaded(searchData.data.length <= 6)
     } else {
       setSearchResults([])
       setSearchAllLoaded(true)
     }
   }, [searchData])
 
-  const handleShowMoreSearch = () => {
-    if (searchData?.data) {
-      const newLimit = searchResults.length + 5
-      const newResults = searchData.data.slice(0, newLimit)
-      setSearchResults(newResults)
-      setSearchAllLoaded(newLimit >= searchData.data.length)
-    }
+  // const handleShowMoreSearch = () => {
+  //   if (searchData?.data) {
+  //     const newLimit = searchResults.length + 6
+  //     const newResults = searchData.data.slice(0, newLimit)
+  //     setSearchResults(newResults)
+  //     setSearchAllLoaded(newLimit >= searchData.data.length)
+  //   }
+  // }
+const handleShowMoreSearch = () => {
+  if (searchData?.data) {
+    const newLimit = searchResults.length + 6;
+    const newResults = searchData.data.slice(0, newLimit);
+
+    setSearchResults(prev => {
+      const updated = [...newResults];
+      return updated;
+    });
+
+    setSearchAllLoaded(newLimit >= searchData.data.length);
   }
+};
+
+
+
+console.log('Search length:', searchData?.data?.length)
+console.log('Current displayed:', searchResults.length)
 
   
   return (
     <Loading isPending={(!!searchDebounce && (isPending || isFetching)) || Object.values(loadingTypes).some(v => v)}>
       <div style={{ width: '1270px', margin: '0 auto' }}></div>
       <div className='body' style={{ width: '100%', backgroundColor: '#fff' }}>
-        <div id="container" style={{ paddingBottom: '60px', width: '1270px', margin: '0 auto' }}>
+        <div id="container" style={{
+          paddingBottom: '60px',
+          maxWidth: '1270px',
+          width: '100%',
+          margin: '0 auto',
+          paddingLeft: '16px',
+          paddingRight: '16px',
+        }}>
           <SliderComponent arrImages={[slider4, slider4, slider4]} />
          <WrapperSection>
             <SectionTitle>FLASH SALE</SectionTitle>
             {/* Sử dụng Suspense để bọc FlashSaleCountdown */}
             <Suspense fallback={<div>Đang tải Flash Sale...</div>}>
-              <FlashSaleCountdown1 endTime="2025-05-18T23:59:59" />
+              <FlashSaleCountdown1 endTime="2025-05-27T23:59:59" />
             </Suspense>
             <ProductScrollWithArrows>
               {flashSaleProducts.map(product => (
@@ -191,128 +206,50 @@ const HomePage = () => {
             </ProductScrollWithArrows>
           </WrapperSection>
 
-          {/* {searchDebounce ? (
-            <WrapperSection>
-              <SectionTitle>KẾT QUẢ TÌM KIẾM</SectionTitle>
-              <WrapperProducts>
-                {searchResults.map(product => (
-                  <CardComponent
-                    key={product._id}
-                    countInstock={product.countInstock}
-                    description={product.description}
-                    image={product.image}
-                    name={product.name}
-                    price={product.price}
-                    rating={product.rating}
-                    type={product.type}
-                    selled={product.selled}
-                    discount={product.discount}
-                    id={product._id}
-                  />
-                ))}
-              </WrapperProducts>
-              {!searchAllLoaded && (
-                <div style={{ width: '100%', display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
-                  <WrapperButtonMore
-                    textButton={'Xem thêm'}
-                    type="outline"
-                    onClick={handleShowMoreSearch}
-                  />
-                </div>
-              )}
-            </WrapperSection>
-          ) : (
-            <>
-              {typeProducts.length === 0 || Object.keys(productsByType).length === 0 ? (
-                <div style={{ padding: '20px', textAlign: 'center' }}>Đang tải sản phẩm...</div>
-              ) : (
-                typeProducts.map((type) => {
-                  const limit = productLimits[type] || 5
-                  const products = (productsByType[type] || []).slice(0, limit)
-
-                  return (
-                    <WrapperSection key={type}>
-                      <SectionTitle>{type.toUpperCase()}</SectionTitle>
-                      <WrapperProducts>
-                        {products.map(product => (
-                          <CardComponent
-                            key={product._id}
-                            countInstock={product.countInstock}
-                            description={product.description}
-                            image={product.image}
-                            name={product.name}
-                            price={product.price}
-                            rating={product.rating}
-                            type={product.type}
-                            selled={product.selled}
-                            discount={product.discount}
-                            id={product._id}
-                          />
-                        ))}
-                      </WrapperProducts>
-                      <div style={{ width: '100%', display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
-                        <WrapperButtonMore
-                          textButton={loadingTypes[type] ? 'Đang tải...' : allLoaded[type] ? 'Đã tải hết' : 'Xem thêm'}
-                          type="outline"
-                          styleButton={{
-                            background: allLoaded[type] ? '#ccc' : '#fff',
-                          }}
-                          styleTextButton={{
-                            fontWeight: '500',
-                            color: allLoaded[type] ? '#999' : '#000',
-                          }}
-                          disabled={loadingTypes[type] || allLoaded[type]}
-                          onClick={() => {
-                            if (!loadingTypes[type] && !allLoaded[type]) {
-                              setProductLimits(prev => {
-                                const newLimit = (prev[type] || 5) + 5
-                                const total = productsByType[type]?.length || 0
-
-                                const newAllLoaded = newLimit >= total
-
-                                setAllLoaded(prevLoaded => ({
-                                  ...prevLoaded,
-                                  [type]: newAllLoaded
-                                }))
-
-                                return {
-                                  ...prev,
-                                  [type]: newLimit
-                                }
-                              })
-                            }
-                          }}
-                        />
-                      </div>
-                    </WrapperSection>
-                  )
-                })
-              )}
-            </>
-          )} */}
-
+          
         {searchDebounce ? (
           <WrapperSection>
             <SectionTitle>KẾT QUẢ TÌM KIẾM</SectionTitle>
-            <WrapperProducts>
-              {searchResults.map(product => (
-                <CardComponent 
-                  countInstock={product.countInstock}
-                  description={product.description}
-                  image={product.image}
-                  name={product.name}
-                  price={product.price}
-                  rating={product.rating}
-                  type={product.type}
-                  selled={product.selled}
-                  discount={product.discount}
-                  id={product._id}
-                />
-              ))}
-            </WrapperProducts>
-            {!searchAllLoaded && (
-              <div style={{ textAlign: 'center', marginTop: 20 }}>
-                <WrapperButtonMore textButton="Xem thêm" type="outline" onClick={handleShowMoreSearch} />
+
+            {searchResults.length > 0 ? (
+              <>
+                <WrapperProductsSearch>
+                  {searchResults.map(product => (
+                    <CardComponent 
+                      key={product._id}
+                      countInstock={product.countInstock}
+                      description={product.description}
+                      image={product.image}
+                      name={product.name}
+                      price={product.price}
+                      rating={product.rating}
+                      type={product.type}
+                      selled={product.selled}
+                      discount={product.discount}
+                      id={product._id}
+                    />
+                  ))}
+                </WrapperProductsSearch>
+
+                {!searchAllLoaded && (
+                  <div style={{ textAlign: 'center', marginTop: 20 }}>
+                    <WrapperButtonMore
+                      textButton="Xem thêm"
+                      type="outline"
+                      onClick={handleShowMoreSearch}
+                    />
+                  </div>
+                )}
+              </>
+            ) : (
+              <div style={{
+                padding: '24px',
+                textAlign: 'center',
+                fontSize: '16px',
+                color: '#888',
+                fontStyle: 'italic'
+              }}>
+                Không có sản phẩm phù hợp với từ khóa tìm kiếm.
               </div>
             )}
           </WrapperSection>

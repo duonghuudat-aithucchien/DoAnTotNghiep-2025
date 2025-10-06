@@ -88,6 +88,34 @@ export const WrapperProducts = styled.div`
   }
 `;
 
+export const WrapperProductsSearch = styled.div`
+  display: flex;
+  flex-wrap: wrap; /* Cho phép các sản phẩm xuống dòng */
+  gap: 16px;
+  justify-content: flex-start;
+
+  /* Xoá overflow-x để không cuộn ngang */
+  overflow: visible;
+
+  > * {
+    flex: 0 0 calc(16.66% - 16px); /* 6 sản phẩm mỗi hàng, trừ đi khoảng cách gap */
+    box-sizing: border-box;
+  }
+
+  @media (max-width: 1024px) {
+    > * {
+      flex: 0 0 calc(33.33% - 16px); /* 3 sản phẩm trên tablet */
+    }
+  }
+
+  @media (max-width: 600px) {
+    > * {
+      flex: 0 0 calc(50% - 16px); /* 2 sản phẩm trên mobile */
+    }
+  }
+`;
+
+
 
 export const ArrowButton = styled.button`
   position: absolute;
