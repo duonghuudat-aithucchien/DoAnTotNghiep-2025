@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import NavbarComponent from '../../components/NavbarComponent/NavbarComponent'
 import CardComponent from '../../components/CardComponent/CardComponent'
-import { Col, Pagination, Row, Select, Typography } from 'antd'
+import { Col, Pagination, Row, Typography } from 'antd'
 import { WrapperNavbar, WrapperProducts, WrapperHeader, WrapperTopBar } from './style'
 import { useLocation } from 'react-router-dom'
 import * as ProductService from '../../service/ProductService'
@@ -11,7 +11,6 @@ import { useDebounce } from '../../hooks/useDebounce'
 import { getFilteredProducts } from '../../service/FilterService'
 
 const { Title } = Typography
-const { Option } = Select
 
 const TypeProductPage = () => {
   const searchProduct = useSelector((state) => state?.product?.search)

@@ -3,8 +3,16 @@ import axios from "axios"
 
 export const axiosJWT = axios.create()
 
+export const getStoredAccessToken = () => {
+    try {
+        return JSON.parse(localStorage.getItem('access_token')) || ''
+    } catch {
+        return ''
+    }
+}
+
 export const LoginUser = async (data) => {
-    const res = await axios.post(`${process.env.REACT_APP_API_URL}/user/sign-in`, data);
+    const res = await axios.post(`${process.env.REACT_APP_API_URL}/user/sign-in`, data, { withCredentials: true });
     return res.data
 }
 
@@ -33,15 +41,15 @@ export const getAllUser = async (access_token) => {
 }
 
 export const refreshToken = async () => {
-    const res = await axios.post(`${process.env.REACT_APP_API_URL}/user/refresh-token`, {
-        withCredentials: true //tu dong lay cookie va truyen xuong be
+    const res = await axios.post(`${process.env.REACT_APP_API_URL}/user/refresh-token`, null, {
+        withCredentials: true
     });
     return res.data
 }
 
 
 export const logoutUser = async () => {
-    const res = await axios.post(`${process.env.REACT_APP_API_URL}/user/log-out`)
+    const res = await axios.post(`${process.env.REACT_APP_API_URL}/user/log-out`, null, { withCredentials: true })
     return res.data
 }
 
@@ -64,7 +72,7 @@ export const deleteUser = async (id, data, access_token) => {
 }
 
 export const deleteManyUser = async (data, access_token) => {
-    const res = await axiosJWT.post(`${process.env.REACT_APP_API_URL}/product/delete-user`, data, {
+    const res = await axiosJWT.post(`${process.env.REACT_APP_API_URL}/user/delete-many`, data, {
         headers: {
             token: `Bearer ${access_token}`,
         }

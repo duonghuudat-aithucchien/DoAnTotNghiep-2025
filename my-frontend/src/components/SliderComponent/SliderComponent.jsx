@@ -12,8 +12,6 @@ import {
   StatValue,
   StatLabel,
   Overlay,
-  BrandLogosWrapper,
-  BrandLogo,
 } from './style';
 
 const SliderComponent = ({ arrImages }) => {

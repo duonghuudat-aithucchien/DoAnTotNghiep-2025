@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { WrapperHeader } from './style'
 import { Button, Space } from 'antd'
 import { SearchOutlined } from '@ant-design/icons'
@@ -9,7 +9,6 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useSelector } from 'react-redux'
 import { orderContant } from '../../contant'
 import OrderStatusUpdater from './OrderStatusUpdater'
-import { useMemo } from 'react'
 import { format } from 'date-fns';
 
 const OrderAdmin = ({ onOrderUpdate }) => {
@@ -23,22 +22,7 @@ const OrderAdmin = ({ onOrderUpdate }) => {
 
   const queryOrder = useQuery({ queryKey: ['orders'], queryFn: getAllOrder })
   const { isPending: isPendingOrders, data: orders } = queryOrder
-  const productTypeData = useMemo(() => {
-    const typeCount = {}
-  
-    orders?.data?.forEach(order => {
-      order.orderItems.forEach(item => {
-        const type = item.type || 'Khác'
-        typeCount[type] = (typeCount[type] || 0) + item.qty
-      })
-    })
-  
-    return Object.entries(typeCount).map(([type, value]) => ({
-      type,
-      value,
-    }))
-  }, [orders])
-  
+
 
   const handleSearch = (selectedKeys, confirm, dataIndex) => {
     confirm()

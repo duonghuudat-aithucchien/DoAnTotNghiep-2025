@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import {convertPrice} from '../../utils'
 
 const CardComponent = (props) => {
-    const {countInstock, description, image, name, price, rating, type, selled, discount, id} = props
+    const { image, name, price, rating, selled, discount, id } = props
     const navigate = useNavigate()
     const handleDetailsProduct = (id) => {
         navigate(`/product-details/${id}`)
@@ -34,10 +34,16 @@ const CardComponent = (props) => {
         styles={{width: '200px', height: '200px'}}
         style={{width: 200 }}
         bodyStyle={{ padding: '10px'}}
-        cover={<img alt="example" src={image} />}
+        cover={<img alt={name} src={image} loading="lazy" />}
         onClick={() => handleDetailsProduct(id)}
+        role="link"
+        tabIndex={0}
+        onKeyDown={(event) => {
+            if (event.key === 'Enter' || event.key === ' ') handleDetailsProduct(id)
+        }}
     >
             <img 
+                alt="logo"
                 src={logo} style={{
                     width: '68px', height: '14px', position: 'absolute', top: -1, left: -1, borderTopLeftRadius: '3px'
                 }}
@@ -58,7 +64,7 @@ const CardComponent = (props) => {
             </span>
 
             <WrapperDiscountText>
-                - {discount || 5} %
+                {Number(discount) > 0 ? `- ${discount} %` : ''}
             </WrapperDiscountText>
         </WrapperPriceText>
   </WrapperCardStyle>

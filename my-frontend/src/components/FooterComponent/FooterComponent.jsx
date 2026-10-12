@@ -29,6 +29,7 @@ import MastercardIcon from '../../assets/icons/MastercardIcon.svg';
 import PaypalIcon from '../../assets/icons/PaypalIcon.svg';
 import ApplePayIcon from '../../assets/icons/ApplePayIcon.svg';
 import GooglePayIcon from '../../assets/icons/GooglePayIcon.svg';
+import * as EmailService from '../../service/EmailService';
 
 const Footer = () => {
     const [email, setEmail] = useState('');
@@ -41,21 +42,11 @@ const Footer = () => {
         }
 
         try {
-            const response = await fetch('/api/email/subscribe', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email }),
-            });
-
-            const data = await response.json();
-            if (response.ok) {
-                setMessage('Đăng ký thành công!');
-                setEmail('');
-            } else {
-                setMessage(data.message || 'Đăng ký thất bại');
-            }
+            await EmailService.subscribeEmail(email);
+            setMessage('Đăng ký thành công!');
+            setEmail('');
         } catch (error) {
-            setMessage('Có lỗi xảy ra, vui lòng thử lại sau');
+            setMessage(error?.response?.data?.message || 'Có lỗi xảy ra, vui lòng thử lại sau');
         }
     };
 
@@ -84,9 +75,9 @@ const Footer = () => {
                         Chúng tôi có những bộ quần áo phù hợp với phong cách của bạn và bạn tự hào khi mặc chúng. Từ phụ nữ đến nam giới.
                     </Description>
                     <SocialIcons>
-                        <a href="#"><SocialIcon src={TwitterIcon} alt="Twitter" /></a>
-                        <a href="#"><SocialIcon src={FacebookIcon} alt="Facebook" /></a>
-                        <a href="#"><SocialIcon src={InstagramIcon} alt="Instagram" /></a>
+                        <a href="#twitter"><SocialIcon src={TwitterIcon} alt="Twitter" /></a>
+                        <a href="#facebook"><SocialIcon src={FacebookIcon} alt="Facebook" /></a>
+                        <a href="#instagram"><SocialIcon src={InstagramIcon} alt="Instagram" /></a>
                         <a href="https://github.com/duonghuudat/"><SocialIcon src={GithubIcon} alt="GitHub" /></a>
                     </SocialIcons>
                 </Column>

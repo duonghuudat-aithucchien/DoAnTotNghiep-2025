@@ -17,18 +17,18 @@ export const userSlice = createSlice({
   initialState,
   reducers: {
     updateUser: (state, action) => {
-            const { name = null, email = null, access_token = '', address = '', phone = '', avatar = '', _id = '', isAdmin, city = ''} = action.payload
-            state.name = name
-            state.email = email
-            state.phone = phone
-            state.address = address
-            state.avatar = avatar
-            state.id = _id
-            state.access_token = access_token
-            state.isAdmin = isAdmin
-            state.city = city
-
-        },
+      const payload = action.payload || {}
+      if (payload.name !== undefined && payload.name !== null) state.name = payload.name
+      if (payload.email !== undefined && payload.email !== null) state.email = payload.email
+      if (payload.phone !== undefined && payload.phone !== null) state.phone = payload.phone
+      if (payload.address !== undefined && payload.address !== null) state.address = payload.address
+      if (payload.avatar !== undefined && payload.avatar !== null) state.avatar = payload.avatar
+      if (payload._id) state.id = payload._id
+      if (payload.id) state.id = payload.id
+      if (payload.access_token) state.access_token = payload.access_token
+      if (payload.isAdmin !== undefined) state.isAdmin = payload.isAdmin
+      if (payload.city !== undefined && payload.city !== null) state.city = payload.city
+    },
     resetUser: (state) => {
       state.name = ''
       state.email = ''

@@ -1,40 +1,65 @@
 const express = require("express");
 const dotenv = require('dotenv');
-const mongoose = require("mongoose");
 const routes = require("./routes");
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
-const cors = require('cors')
+const cors = require('cors');
 const path = require('path');
-dotenv.config()
+const fs = require('fs');
+const connectDB = require('./config/db');
+const { notFound, errorHandler } = require('./middleware/errorMiddleware');
 
-const app = express()
+dotenv.config();
+
+const app = express();
 const port = process.env.PORT || 3001;
+const allowedOrigins = (process.env.CORS_ORIGINS || 'http://localhost:3000')
+  .split(',')
+  .map((origin) => origin.trim());
 
-app.use(cors())
-// app.use(bodyParser.json())
-app.use(bodyParser.json({ limit: "50mb" }));
-app.use(bodyParser.urlencoded({ limit: "50mb", extended: true }));
-app.use(cookieParser())
+// Middleware
+app.disable('x-powered-by');
+app.use(cors({
+  origin(origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
+    return callback(new Error('Origin is not allowed by CORS'));
+  },
+  credentials: true,
+}));
+app.use((req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+  next();
+});
+app.use(bodyParser.json({ limit: "2mb" }));
+app.use(bodyParser.urlencoded({ limit: "2mb", extended: true }));
+app.use(cookieParser());
 
+app.get('/api/health', (req, res) => res.status(200).json({ status: 'OK' }));
+
+// Connect Database
+connectDB();
+
+// API Routes
 routes(app);
 
+// Serve Static Frontend Build (if present)
+const buildPath = path.join(__dirname, '../../my-frontend/build');
+if (fs.existsSync(buildPath)) {
+  app.use(express.static(buildPath));
+  app.get('*', (req, res) => {
+    if (req.path.startsWith('/api')) {
+      return res.status(404).json({ status: 'ERR', message: 'API route not found' });
+    }
+    res.sendFile(path.join(buildPath, 'index.html'));
+  });
+}
 
-mongoose.connect('mongodb+srv://duongdat667:@cluster.z1r1o.mongodb.net/?retryWrites=true&w=majority&appName=Cluster')
-    .then(() =>{
-        console.log('Connect Db success')
-    })
-    .catch((err) => {
-        console.log(err)
-    })
+app.use(notFound);
+app.use(errorHandler);
 
-
-
-app.use(express.static(path.join(__dirname, '../../my-frontend/build')));
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../../my-frontend/build', 'index.html'));
+app.listen(port, () => {
+  console.log(`🚀 Backend Server is running on port: ${port}`);
 });
-
-app.listen(port , () => {
-    console.log('Server is running in port: ', + port)
-})

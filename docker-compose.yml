@@ -1,0 +1,27 @@
+services:
+  backend:
+    build: ./my-backend
+    env_file: ./my-backend/.env
+    ports:
+      - "3001:3001"
+    restart: unless-stopped
+
+  chatbot:
+    build: ./chatbot
+    env_file: ./chatbot/.env
+    ports:
+      - "5000:5000"
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./my-frontend
+      args:
+        REACT_APP_API_URL: http://localhost:3001/api
+        REACT_APP_CHATBOT_URL: http://localhost:5000
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+      - chatbot
+    restart: unless-stopped

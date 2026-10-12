@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react'
-import { WrapperContentProfile, WrapperHeader, WrapperInput, WrapperLabel, WrapperUploadFile } from './Style'
+import { WrapperLabel, WrapperUploadFile } from './Style'
 import InputForm from '../../components/InputForm/InputForm'
 import ButtonComponent from '../../components/ButtonComponent/ButtonComponent'
 import { useDispatch, useSelector } from 'react-redux'

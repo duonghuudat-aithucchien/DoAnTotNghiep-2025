@@ -1,3 +1,4 @@
+import os
 import random
 import json
 import pickle
@@ -11,8 +12,9 @@ from nltk.stem import WordNetLemmatizer
 
 lemmatizer = WordNetLemmatizer()
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 # Đọc dữ liệu từ file intents.json
-with open(r'C:\Users\Admin\OneDrive - National Economics University\Desktop\đồ án\chatbot\intents.json', encoding="utf8") as file:
+with open(os.path.join(BASE_DIR, 'intents.json'), encoding="utf8") as file:
     intents = json.load(file)
 
 # Khai báo danh sách để xử lý dữ liệu
@@ -36,8 +38,8 @@ words = sorted(set(words))  # Loại bỏ từ trùng lặp
 classes = sorted(set(classes))  # Loại bỏ nhãn trùng lặp
 
 # Lưu dữ liệu đã xử lý vào file
-pickle.dump(words, open('words.pkl', 'wb'))
-pickle.dump(classes, open('classes.pkl', 'wb'))
+pickle.dump(words, open(os.path.join(BASE_DIR, 'words.pkl'), 'wb'))
+pickle.dump(classes, open(os.path.join(BASE_DIR, 'classes.pkl'), 'wb'))
 
 # Chuẩn bị dữ liệu huấn luyện
 training = []
@@ -78,7 +80,7 @@ model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accur
 model.fit(np.array(train_x), np.array(train_y), epochs=200, batch_size=5, verbose=1)
 
 # Lưu mô hình đã huấn luyện
-model.save('chatbot_model.h5')
+model.save(os.path.join(BASE_DIR, 'chatbot_model.h5'))
 print("Training complete. Model saved as chatbot_model.h5")
 
 

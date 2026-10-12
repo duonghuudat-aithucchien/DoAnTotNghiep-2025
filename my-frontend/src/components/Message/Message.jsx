@@ -12,4 +12,8 @@ const warning = (mes = 'Warning') => {
     message.warning(mes)
 }
 
-export { success, error, warning}
+const info = (mes = 'Info') => {
+    message.info(mes);
+}
+
+export { success, error, warning, info }

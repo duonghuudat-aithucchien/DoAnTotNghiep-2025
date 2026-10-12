@@ -1,4 +1,4 @@
-import React, { Fragment, useEffect, useCallback, useState } from 'react'
+import React, { Fragment, Suspense, useEffect, useCallback, useState } from 'react'
 import {BrowserRouter as Router, Routes, Route} from 'react-router-dom'
 import DefaultComponent from './components/DefaultComponent/DefaultComponent'
 import { routes } from './routes/index'
@@ -91,17 +91,22 @@ function App() {
 
   
 
-  UserSerVice.axiosJWT.interceptors.request.use(async (config) => {
-    const currentTime = new Date()
-    const {decoded} = handleDecoded()
-    if(decoded?.exp < currentTime.getTime() / 1000) {
-      const data = await UserSerVice.refreshToken()
-      config.headers['token'] = `Bearer ${data?.access_token}`
-    }
-    return config
-  }, function (error) {
-    return Promise.reject(error)
-  })
+  useEffect(() => {
+    const interceptorId = UserSerVice.axiosJWT.interceptors.request.use(async (config) => {
+      const currentTime = Date.now() / 1000;
+      const { decoded } = handleDecoded();
+      if (decoded?.exp && decoded.exp < currentTime) {
+        const data = await UserSerVice.refreshToken();
+        if (data?.access_token) {
+          localStorage.setItem('access_token', JSON.stringify(data.access_token));
+          config.headers.token = `Bearer ${data.access_token}`;
+        }
+      }
+      return config;
+    }, (error) => Promise.reject(error));
+
+    return () => UserSerVice.axiosJWT.interceptors.request.eject(interceptorId);
+  }, [handleDecoded]);
 
 
   //console.log('process.env.REACT_API_URL_BACKEND', process.env.REACT_APP_API_URL)
@@ -119,6 +124,7 @@ function App() {
     <Loading isPending={isPending} style={{ background: '#ccc' }}>
       <Router>
   {isReady ? (
+    <Suspense fallback={<Loading isPending={true} />}>
     <Routes>
       {routes.map((route) => {
         const Page = route.page;
@@ -145,6 +151,7 @@ function App() {
         );
       })}
     </Routes>
+    </Suspense>
   ) : (
     <Loading isPending={true} />
   )}

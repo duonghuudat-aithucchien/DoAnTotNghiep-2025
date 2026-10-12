@@ -1,6 +1,7 @@
 const Product = require("../models/ProductModel")
 const bcrypt = require("bcrypt")
 const mongoose = require('mongoose');
+const Order = require('../models/OrderProduct');
 
 // const createProduct = (newProduct) => {
 //     return new Promise(async (resolve, reject) => {
@@ -430,7 +431,6 @@ const getTopNewProducts = (limit = 5) => {
 const addReview = (productId, userId, rating, comment) => {
     return new Promise(async (resolve, reject) => {
         try {
-            console.log('Processing review:', { productId, userId, rating, comment });
             if (!productId || !userId) {
                 return reject({
                     status: 'ERR',
@@ -450,10 +450,10 @@ const addReview = (productId, userId, rating, comment) => {
                     message: 'Rating must be between 1 and 5',
                 });
             }
-            if (!comment || comment.trim() === '') {
+            if (!comment || comment.trim() === '' || comment.trim().length > 1000) {
                 return reject({
                     status: 'ERR',
-                    message: 'Comment cannot be empty',
+                    message: 'Comment must contain between 1 and 1000 characters',
                 });
             }
 
@@ -464,6 +464,15 @@ const addReview = (productId, userId, rating, comment) => {
                     status: 'ERR',
                     message: 'Product not found',
                 });
+            }
+
+            const purchased = await Order.exists({
+                user: userId,
+                status: 'delivered',
+                'orderItems.product': productId,
+            });
+            if (!purchased) {
+                return reject({ status: 'ERR', message: 'Chỉ khách đã nhận sản phẩm mới có thể đánh giá' });
             }
 
             const existingReview = product.reviews.find(
@@ -479,7 +488,7 @@ const addReview = (productId, userId, rating, comment) => {
             const newReview = {
                 user: userId,
                 rating,
-                comment,
+                comment: comment.trim(),
                 createdAt: new Date(),
             };
             product.reviews.push(newReview);
@@ -488,7 +497,6 @@ const addReview = (productId, userId, rating, comment) => {
             const totalScore = product.reviews.reduce((acc, review) => acc + review.rating, 0);
             product.rating = totalScore / totalRatings;
 
-            console.log('Saving product with new review:', { productId, newReview });
             await product.save();
 
             resolve({

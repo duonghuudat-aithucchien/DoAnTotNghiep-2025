@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { WrapperHeader, WrapperActions, AddButton, PlusIcon, SearchInput, WrapperTableContainer, SearchGroup, WrapperHeaderContainer, WrapperButtons} from './style'
+import { WrapperHeader, AddButton, PlusIcon, WrapperTableContainer, WrapperHeaderContainer, WrapperButtons} from './style'
 import { Button, Form, Select, Space } from 'antd'
 import { DeleteOutlined, EditOutlined, PlusOutlined, SearchOutlined, UploadOutlined } from '@ant-design/icons'
 import TableComponent from '../TableComponent/TableComponent'
@@ -23,10 +23,7 @@ const AdminProduct = () => {
     const [isOpenDrawer, setIsOpenDrawer] = useState(false)
     const [isPendingUpdate, setIsPendingUpdate] = useState(false)
     const user = useSelector((state) => state?.user)
-    const [typeSelect, setTypeSelect] = useState('')
     const searchInput = useRef(null);
-    const [searchKeyword, setSearchKeyword] = useState('');
-    const [filteredProducts, setFilteredProducts] = useState([]);
 
     const inittial = () => ({
         name: '',
@@ -53,7 +50,7 @@ const AdminProduct = () => {
             const {name, price, description, rating, image, subImages, type, countInStock, discount, sizes, colors} =data
             const res = ProductService.createProduct({
                 name, price, description, rating, image, subImages, type, countInStock, discount, sizes, colors
-            })
+            }, user?.access_token)
             return res
         },
         {
@@ -179,7 +176,7 @@ const AdminProduct = () => {
     const {data, isPending, isSuccess, isError} = mutation
     const {data: dataUpdated, isPending: isPendingUpdated, isSuccess: isSuccessUpdated, isError: isErrorUpdated} = mutationUpdate
     const {data: dataDeleted, isPending: isPendingDeleted, isSuccess: isSuccessDeleted, isError: isErrorUDeleted} = mutationDelete
-    const {data: dataDeletedMany, isPending: isPendingDeletedMany, isSuccess: isSuccessDeletedMany, isError: isErrorUDeletedMany} = mutationDeleteMany
+    const {data: dataDeletedMany, isSuccess: isSuccessDeletedMany, isError: isErrorUDeletedMany} = mutationDeleteMany
 
 
 
@@ -369,6 +366,7 @@ const AdminProduct = () => {
         } else if(isError){
             message.error()
         }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isSuccess])
 
     //update
@@ -379,6 +377,7 @@ const AdminProduct = () => {
         } else if(isErrorUpdated){
             message.error()
         }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isSuccessUpdated])
 
     //delete
@@ -389,6 +388,7 @@ const AdminProduct = () => {
         } else if(isErrorUDeleted){
             message.error()
         }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isSuccessDeleted])
 
     //deletemany
@@ -398,6 +398,7 @@ const AdminProduct = () => {
         } else if(isErrorUDeletedMany){
             message.error()
         }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isSuccessDeletedMany])
 
 
@@ -521,28 +522,7 @@ const AdminProduct = () => {
             })
         }
 
-       const handleSearchInputChange = (value) => {
-        setSearchKeyword(value);
-        };
 
-        const executeSearch = () => {
-            const filteredData = products?.data?.filter((product) =>
-              product.name.toLowerCase().includes(searchKeyword.toLowerCase())
-            );
-            setFilteredProducts(filteredData);
-          };
-
-          const resetSearch = () => {
-            setSearchKeyword('');
-            setFilteredProducts(products?.data || []);
-          };
-
-          useEffect(() => {
-            if (products?.data) {
-              setFilteredProducts(products.data);
-            }
-          }, [products]);
-        
   return (
     <div>
         <WrapperHeaderContainer>
@@ -801,7 +781,7 @@ const AdminProduct = () => {
                             borderRadius: '50%',
                             objectFit: 'cover',
                             marginLeft: '10px'
-                        }} alt='image'/>
+                        }} alt='avatar'/>
                     )}
                     </WrapperUploadFile>
                 </Form.Item>
@@ -1010,7 +990,7 @@ const AdminProduct = () => {
                             borderRadius: '50%',
                             objectFit: 'cover',
                             marginLeft: '10px'
-                        }} alt='image'/>
+                        }} alt='avatar'/>
                     )}
                     </WrapperUploadFile>
                 </Form.Item>

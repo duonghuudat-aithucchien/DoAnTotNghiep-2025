@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { WrapperHeader } from './style'
 import { Button, Form, Space } from 'antd'
-import { DeleteOutlined, EditOutlined, PlusOutlined, SearchOutlined, UploadOutlined } from '@ant-design/icons'
+import { DeleteOutlined, SearchOutlined, UploadOutlined } from '@ant-design/icons'
 import TableComponent from '../TableComponent/TableComponent'
 import InputComponent from '../InputComponent/InputComponent'
 import { getBase64 } from '../../utils'
@@ -79,7 +79,7 @@ const AdminUser = () => {
 
       const {data: dataUpdated, isPending: isPendingUpdated, isSuccess: isSuccessUpdated, isError: isErrorUpdated} = mutationUpdate
       const {data: dataDeleted, isPending: isPendingDeleted, isSuccess: isSuccessDeleted, isError: isErrorUDeleted} = mutationDelete
-      const {data: dataDeletedMany, isPending: isPendingDeletedMany, isSuccess: isSuccessDeletedMany, isError: isErrorUDeletedMany} = mutationDeleteMany
+      const {data: dataDeletedMany, isSuccess: isSuccessDeletedMany, isError: isErrorUDeletedMany} = mutationDeleteMany
 
  
       const getAllUsers = async () => {
@@ -120,9 +120,7 @@ const AdminUser = () => {
           }
       }, [rowSelected, isOpenDrawer])
   
-      const handleDetailsUser = () => {
-          setIsOpenDrawer(true)
-      }
+
 
       const handleDeleteManyUsers = (ids) => {
         mutationDeleteMany.mutate({ids: ids, token: user?.access_token}, {
@@ -230,22 +228,7 @@ const AdminUser = () => {
           //   ),
         });
 
-        const getStatusTag = (status) => {
-          switch (status) {
-            case "pending":
-              return <Tag color="gold">Chờ xử lý</Tag>;
-            case "processing":
-              return <Tag color="blue">Đang xử lý</Tag>;
-            case "delivering":
-              return <Tag color="cyan">Đang giao hàng</Tag>;
-            case "delivered":
-              return <Tag color="green">Đã giao</Tag>;
-            case "cancelled":
-              return <Tag color="red">Đã hủy</Tag>;
-            default:
-              return <Tag color="default">Không rõ</Tag>;
-          }
-        };
+
   
       const columns = [
         {
@@ -353,6 +336,7 @@ const AdminUser = () => {
           } else if(isErrorUpdated){
               message.error()
           }
+      // eslint-disable-next-line react-hooks/exhaustive-deps
       }, [isSuccessUpdated])
   
       //delete
@@ -363,6 +347,7 @@ const AdminUser = () => {
           } else if(isErrorUDeleted){
               message.error()
           }
+      // eslint-disable-next-line react-hooks/exhaustive-deps
       }, [isSuccessDeleted])
 
       //deletemany
@@ -372,6 +357,7 @@ const AdminUser = () => {
         } else if(isErrorUDeletedMany){
             message.error()
         }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isSuccessDeletedMany])
   
       const handleCloseDrawer = () => {

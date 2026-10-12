@@ -5,15 +5,19 @@ import requests
 from dotenv import load_dotenv
 from pymongo import MongoClient
 from datetime import datetime
+import jwt
 
 from sentence_transformers import SentenceTransformer
 import faiss
 import numpy as np
 
 
-load_dotenv()
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+load_dotenv(os.path.join(BASE_DIR, ".env"))
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY", "YOUR_GOOGLE_API_KEY")
 MONGO_URI = os.getenv("MONGO_URI", "YOUR_MONGO_URI")
+ACCESS_TOKEN = os.getenv("ACCESS_TOKEN", "")
+FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:3000")
 
 
 mongo_client = MongoClient(MONGO_URI)
@@ -23,7 +27,16 @@ conversations_collection = db["conversations"]
 
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, origins=[FRONTEND_URL], supports_credentials=True)
+
+def get_authenticated_user():
+    auth_header = request.headers.get("Authorization", "")
+    if not auth_header.startswith("Bearer ") or not ACCESS_TOKEN:
+        return None
+    try:
+        return jwt.decode(auth_header.split(" ", 1)[1], ACCESS_TOKEN, algorithms=["HS256"])
+    except jwt.PyJWTError:
+        return None
 
 # Tải mô hình BERT và khởi tạo FAISS index
 bert_model = SentenceTransformer("all-MiniLM-L6-v2")
@@ -36,6 +49,11 @@ def build_faiss_index():
     global product_embeddings, product_data
     products = list(products_collection.find({}))
     texts = [f"{p.get('name', '')} {p.get('type', '')} {p.get('description', '')}" for p in products]
+    faiss_index.reset()
+    if not texts:
+        product_embeddings = []
+        product_data = []
+        return
     embeddings = bert_model.encode(texts, convert_to_numpy=True)
     product_embeddings = embeddings
     product_data = products
@@ -53,7 +71,7 @@ def call_gemini_api(prompt, model="models/gemini-1.5-flash"):
     params = {"key": GOOGLE_API_KEY}
 
     try:
-        response = requests.post(url, headers=headers, json=payload, params=params)
+        response = requests.post(url, headers=headers, json=payload, params=params, timeout=20)
         response.raise_for_status()
         data = response.json()
         content = data.get("candidates", [])[0].get("content", {}).get("parts", [])
@@ -163,20 +181,24 @@ def chatbot_response():
     try:
         data = request.get_json()
         user_message = data.get("message", "").strip()
-        user_id = data.get("userId", "unknown")
-        user_email = data.get("userEmail", "")
+        authenticated_user = get_authenticated_user()
+        user_id = authenticated_user.get("id") if authenticated_user else "guest"
+        user_email = ""
 
         if not user_message:
             return jsonify({"response": "Bạn vui lòng nhập câu hỏi để mình hỗ trợ nhé!"})
         
         def log_conversation(msg, resp):
-            conversations_collection.insert_one({
-                "userId": user_id,
-                "userEmail": user_email,
-                "user_message": msg,
-                "bot_response": resp,
-                "timestamp": datetime.utcnow()
-            })
+            try:
+                conversations_collection.insert_one({
+                    "userId": user_id,
+                    "userEmail": user_email,
+                    "user_message": msg,
+                    "bot_response": resp,
+                    "timestamp": datetime.now()
+                })
+            except Exception as log_err:
+                print("Lỗi ghi log hội thoại:", log_err)
         
         if is_greeting_intent(user_message):
             return jsonify({
@@ -259,13 +281,27 @@ def chatbot_response():
 
             response = call_gemini_api(prompt)
             if not response:
-                response_text = "Tạm thời mình chưa thể tư vấn được, bạn quay lại sau một chút nhé 😥."
+                # Fallback thông minh: khi Gemini API hết quota (429) hoặc mạng lỗi, vẫn trả về sản phẩm tìm được bởi FAISS
+                first_prod = top_products[0]
+                response_text = f"Dưới đây là một số mẫu phù hợp nhất với bạn nè ✨: Shop gợi ý bạn tham khảo **{first_prod['name']}** đang được ưa chuộng nhiều nhất. Bạn xem chi tiết sản phẩm bên dưới nhé! 😊"
                 log_conversation(user_message, response_text)
-                return jsonify({"response": response_text})
+                return jsonify({
+                    "response": response_text,
+                    "products": [
+                        {
+                            "name": p['name'],
+                            "price": p['price'],
+                            "discount": p['discount'],
+                            "rating": p['rating'],
+                            "image": p['image'],
+                            "link": f"{FRONTEND_URL}/product-details/{p['_id']}"
+                        } for p in top_products
+                    ]
+                })
             
             response_text = response.get("text", "")
             log_conversation(user_message, response_text)
-            filtered_products = filter_products_from_response(response_text, top_products)
+            filtered_products = filter_products_from_response(response_text, top_products) or top_products[:2]
 
             return jsonify({
                 "response": response_text,
@@ -276,14 +312,14 @@ def chatbot_response():
                         "discount": p['discount'],
                         "rating": p['rating'],
                         "image": p['image'],
-                        "link": f"http://localhost:3000/product-details/{p['_id']}"
+                        "link": f"{FRONTEND_URL}/product-details/{p['_id']}"
                     } for p in filtered_products
                 ]
             })
 
         fallback = call_gemini_api(user_message)
         if not fallback:
-            response_text = "Hiện mình đang bận chút, bạn quay lại sau nhé 😅"
+            response_text = "Chào bạn! Mình là trợ lý thời trang của FashionStyle 👗. Bạn có thể hỏi mình về các mẫu áo, quần, gợi ý phối đồ hoặc chính sách đặt hàng nhé! ✨"
         else:
             response_text = fallback.get("text", "")
 
@@ -296,9 +332,10 @@ def chatbot_response():
     
 @app.route("/get-conversations", methods=["GET"])
 def get_conversations_by_user():
-    user_id = request.args.get("userId")
-    if not user_id:
-        return jsonify({"error": "Thiếu userId"}), 400
+    authenticated_user = get_authenticated_user()
+    if not authenticated_user:
+        return jsonify({"error": "Yêu cầu đăng nhập"}), 401
+    user_id = authenticated_user.get("id")
 
     conversations = list(conversations_collection.find({"userId": user_id}).sort("timestamp", -1))
     result = [{
@@ -309,6 +346,6 @@ def get_conversations_by_user():
     return jsonify({"conversations": result})
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=int(os.getenv("PORT", "5000")), debug=os.getenv("FLASK_DEBUG", "false").lower() == "true")
 
 

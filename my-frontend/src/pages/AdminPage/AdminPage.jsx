@@ -16,18 +16,19 @@ import {
 } from './style'
 
 import { getItem } from '../../utils'
-import { ArrowUpOutlined, ArrowDownOutlined, UserOutlined, ShoppingCartOutlined, PieChartOutlined, AppstoreOutlined, SettingOutlined } from '@ant-design/icons';
-import { Menu, Row, Col, Spin, Typography, Tabs, Card, Table, Tag } from 'antd'
+import { ArrowUpOutlined, ArrowDownOutlined, UserOutlined, ShoppingCartOutlined, PieChartOutlined, AppstoreOutlined, SettingOutlined, GiftOutlined } from '@ant-design/icons';
+import { Menu, Row, Col, Spin, Typography, Card, Table, Tag } from 'antd'
 import RevenueChart from '../../components/Charts/RevenueChart'
 import AdminUser from '../../components/AdminUser/AdminUser'
 import AdminProduct from '../../components/AdminProduct/AdminProduct'
 import OrderAdmin from '../../components/OrderAdmin/OrderAdmin'
 import { getDashboardData } from '../../service/DashboardService'
+import { getStoredAccessToken } from '../../service/UserService'
 import AdminHeader from './AdminHeader';
 import ProfileAdmin from '../../components/ProfileAdmin/ProfileAdmin';
+import AdminVoucher from '../../components/AdminVoucher/AdminVoucher';
 
-const { Title, Text } = Typography
-const { TabPane } = Tabs
+const { Title } = Typography
 
 export const AdminPage = () => {
   const items = [
@@ -35,19 +36,19 @@ export const AdminPage = () => {
     getItem('Người dùng', 'user', <UserOutlined />),
     getItem('Sản phẩm', 'product', <AppstoreOutlined />),
     getItem('Đơn hàng', 'order', <ShoppingCartOutlined />),
+    getItem('Mã giảm giá (Voucher)', 'voucher', <GiftOutlined />),
     getItem('Cập nhật tài khoản', 'profile', <SettingOutlined />),
   ]
 
   const [keySelected, setKeySelected] = useState('')
   const [dashboardData, setDashboardData] = useState(null)
   const [loading, setLoading] = useState(false)
-  const [timeRange, setTimeRange] = useState('week')
-  const [showAllOrders, setShowAllOrders] = useState(false)
+  const [timeRange] = useState('week')
 
   const fetchDashboard = async () => {
     setLoading(true)
     try {
-      const access_token = localStorage.getItem('access_token')
+      const access_token = getStoredAccessToken()
       const res = await getDashboardData(access_token)
       setDashboardData(res)
     } catch (error) {
@@ -293,6 +294,7 @@ export const AdminPage = () => {
       case 'user': return <AdminUser />
       case 'product': return <AdminProduct />
       case 'order': return <OrderAdmin />
+      case 'voucher': return <AdminVoucher />
       case 'profile': return <ProfileAdmin />
       default: return <></>
     }

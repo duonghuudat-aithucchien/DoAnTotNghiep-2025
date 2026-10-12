@@ -3,7 +3,6 @@ import styled from "styled-components";
 // Color constants
 const textPrimary = '#333';
 const textSecondary = '#777';
-const textMuted = '#aaa';
 const primaryBlue = '#1890ff';
 const dangerRed = '#ff424e';
 

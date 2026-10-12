@@ -14,7 +14,7 @@ import { useMutationHooks } from '../../hooks/useMutationHook';
 import * as UserService from '../../service/UserService'
 import * as message from '../../components/Message/Message'
 import { updateUser } from '../../redux/slides/userSlide';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import StepComponent from '../../components/StepComponent/StepComponent';
 import { addNotification } from '../../redux/slides/notificationSlice';
 import { resetOrder } from '../../redux/slides/orderSlide';
@@ -32,6 +32,7 @@ const OrderPage = () => {
     city: ''
   })
   const navigate = useNavigate()
+  const location = useLocation()
   const [form] = Form.useForm()
   const isSuccessOrder = useSelector((state) => state.order.isSuccessOrder);
   const userInfo = useSelector((state) => state.user);
@@ -84,7 +85,7 @@ const OrderPage = () => {
 
   useEffect(() => {
     dispatch(selectedOrder({listChecked}))
-  }, [listChecked])
+  }, [listChecked, dispatch])
 
    useEffect(() => {
           form.setFieldsValue(stateUserDetails)
@@ -99,6 +100,7 @@ const OrderPage = () => {
         phone: user?.phone
       })
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpenModalUpdateInfo])
 
   const handleChangeAddress = () => {
@@ -130,7 +132,7 @@ const OrderPage = () => {
     } else {
       return 20000
     }
-  }, [priceMemo])
+  }, [priceMemo, order?.orderItemsSelected?.length])
 
   const totalPriceMemo = useMemo(() => {
     return Number(priceMemo) - Number(priceDiscountMemo) + Number(deliveryPriceMemo)
@@ -150,8 +152,15 @@ const OrderPage = () => {
   const handleAddCard = () => {
     if(!order?.orderItemsSelected?.length) {
       message.error('Vui lòng chọn sản phẩm')
+      return
     }
-    else if(!user?.phone || !user.address || !user.name || !user.city) {
+    const token = user?.access_token || (localStorage.getItem('access_token') ? JSON.parse(localStorage.getItem('access_token')) : '');
+    if (!user?.id && !token) {
+      message.warning('Vui lòng đăng nhập tài khoản để đặt hàng')
+      navigate('/sign-in', { state: location?.pathname })
+      return
+    }
+    if(!user?.phone || !user.address || !user.name || !user.city) {
       setIsOpenModalUpdateInfo(true)
     } else {
       navigate('/payment')
@@ -171,7 +180,7 @@ const OrderPage = () => {
       
   )
 
-  const {isPending, data} = mutationUpdate
+  const { isPending } = mutationUpdate;
 
   const handleCancelUpdate = () => {
     setstateUserDetails({
@@ -184,19 +193,23 @@ const OrderPage = () => {
     setIsOpenModalUpdateInfo(false)
   }
 
-  console.log('data', data)
   const handleUpdateInfoUser = () => {
-    console.log('stateUserDetails', stateUserDetails)
     const {name, address, city, phone} = stateUserDetails
     if( name && address && city && phone ) {
-      mutationUpdate.mutate({id: user?.id, token: user?.access_token, ...stateUserDetails}, {
-        onSuccess: () => {
-          dispatch(updateUser({name, address, city, phone}))
+      const token = user?.access_token || (localStorage.getItem('access_token') ? JSON.parse(localStorage.getItem('access_token')) : '');
+      mutationUpdate.mutate({id: user?.id, token: token, ...stateUserDetails}, {
+        onSuccess: (res) => {
+          if (res?.status === 'ERR') {
+            message.error(res?.message || 'Cập nhật thông tin thất bại')
+            return
+          }
+          dispatch(updateUser({name, address, city, phone, id: user?.id, access_token: token}))
           setIsOpenModalUpdateInfo(false)
-          
+        },
+        onError: () => {
+          message.error('Cập nhật thông tin thất bại')
         }
       })
-      
     }
   }
 
@@ -225,7 +238,7 @@ const OrderPage = () => {
     <div style={{ background: '#fff', width: '100%', minHeight: '100vh' }}>
     <div style={{ height: '1px', backgroundColor: '#eee' }}></div>
 
-    <div style={{ width: '1270px', margin: '0 auto', padding: '24px 0' }}>
+    <div style={{ width: '100%', maxWidth: '1270px', margin: '0 auto', padding: '24px 16px', boxSizing: 'border-box' }}>
       <div style={{ fontSize: '14px', marginBottom: '8px', color: '#999', display: 'flex', alignItems: 'center', gap: '8px' }}>
         <span style={{ cursor: 'pointer', color: '#666' }} onClick={() => navigate('/')}>Trang chủ</span>
         <span>{'>'}</span>
@@ -242,6 +255,7 @@ const OrderPage = () => {
             display: 'flex',
             alignItems: 'flex-start',
             gap: '24px',
+            flexWrap: 'wrap',
           }}
         >
           {/* Gộp phần trái vào 1 khung trắng đẹp mắt */}
@@ -251,7 +265,8 @@ const OrderPage = () => {
               borderRadius: '10px',
               padding: '16px',
               boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)',
-              width: '68%',
+              flex: '1 1 680px',
+              minWidth: 0,
             }}
           >
             <WrapperLeft style={{ width: '100%' }}>
@@ -337,7 +352,7 @@ const OrderPage = () => {
           </div>
 
 
-        <WrapperRight style={{ width: '32%' }}>
+        <WrapperRight style={{ flex: '1 1 300px', minWidth: 0 }}>
           <WrapperInfo>
             <div style={{ fontSize: '14px' }}>
               <span>Địa chỉ: </span>

@@ -7,14 +7,15 @@ const getDashboardStats = async () => {
   const totalUsers = await User.countDocuments();
   const totalOrders = await Order.countDocuments();
   const totalSalesResult = await Order.aggregate([
+    { $match: { $or: [{ isPaid: true }, { isDelivered: true }] } },
     { $group: { _id: null, total: { $sum: "$totalPrice" } } }
   ]);
   const totalSales = totalSalesResult[0]?.total || 0;
-  const totalPending = await Order.countDocuments({ isPaid: false });
+  const totalPending = await Order.countDocuments({ status: 'pending' });
 
   const recentOrders = await Order.find()
     .sort({ createdAt: -1 })
-    .limit()
+    .limit(5)
     .populate('user', 'name');
 
   const topProducts = await Product.find()

@@ -1,6 +1,17 @@
 import { useState, useEffect, useRef } from "react";
 import { styles } from "./style";
 import { useSelector } from "react-redux";
+
+const CHATBOT_URL = process.env.REACT_APP_CHATBOT_URL || "http://127.0.0.1:5000";
+
+const getStoredAccessToken = () => {
+  try {
+    return JSON.parse(localStorage.getItem('access_token')) || '';
+  } catch {
+    return '';
+  }
+};
+
 const ChatbotWidget = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [input, setInput] = useState("");
@@ -49,7 +60,10 @@ const ChatbotWidget = () => {
     }
 
     try {
-      const res = await fetch(`http://127.0.0.1:5000/get-conversations?userId=${user.id}`);
+      const res = await fetch(`${CHATBOT_URL}/get-conversations`, {
+        headers: { Authorization: `Bearer ${getStoredAccessToken() || user?.access_token}` },
+      });
+      if (!res.ok) throw new Error('Không thể tải lịch sử trò chuyện');
       const data = await res.json();
 
       if (Array.isArray(data.conversations)) {
@@ -68,7 +82,7 @@ const ChatbotWidget = () => {
   };
 
   fetchHistory();
-}, [user?.id]); 
+}, [user?.id, user?.access_token]);
 
   const sendMessage = async () => {
   if (!input) return;
@@ -76,13 +90,14 @@ const ChatbotWidget = () => {
   setMessages((prev) => [...prev, userMessage]);
 
   try {
-    const response = await fetch("http://127.0.0.1:5000/get", {
+    const response = await fetch(`${CHATBOT_URL}/get`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        ...(user?.id ? { Authorization: `Bearer ${getStoredAccessToken() || user?.access_token}` } : {}),
+      },
       body: JSON.stringify({
         message: input,
-        userId: user?.id || "guest",
-        userEmail: user?.email || "",
       }),
     });
 

@@ -79,7 +79,7 @@ const SignInPage = () => {
   };
 
   redirectAfterLogin();
-}, [isSuccess, data?.access_token, handleGetDetailsUser, navigate, location?.state]);
+}, [isSuccess, data?.access_token, handleGetDetailsUser, navigate, location?.state, dispatch]);
 
 
 

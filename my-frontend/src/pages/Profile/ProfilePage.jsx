@@ -80,7 +80,7 @@ export const ProfilePage = () => {
     }
 
   return (
-    <div style={{ width: '1270px', margin: '0 auto', height: '500px'}}>
+    <div style={{ width: '100%', maxWidth: '1270px', margin: '0 auto', minHeight: '500px', padding: '0 16px', boxSizing: 'border-box'}}>
         <WrapperHeader>Thông tin người dùng</WrapperHeader>
         <Loading isPending={isPending}>
             <WrapperContentProfile>

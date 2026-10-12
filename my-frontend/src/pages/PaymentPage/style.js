@@ -17,7 +17,8 @@ export const WrapperStyleHeader = styled.div`
 `;
 
 export const WrapperLeft = styled.div`
-  width: 910px;
+  flex: 1 1 680px;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -50,7 +51,8 @@ export const WrapperCountOrder = styled.div`
 `;
 
 export const WrapperRight = styled.div`
-  width: 340px;
+  flex: 1 1 320px;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 20px;

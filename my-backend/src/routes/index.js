@@ -5,6 +5,7 @@ const PaymentRouter = require('./PaymentRouter')
 const EmailRouter = require('./EmailRouter')
 const FilterRouter = require('./FilterRouter')
 const DashboardRouter = require('./DashboardRouter')
+const VoucherRouter = require('./VoucherRouter')
 
 const routes = (app) => {
     app.use('/api/user', UserRouter)
@@ -14,6 +15,7 @@ const routes = (app) => {
     app.use('/api/email', EmailRouter)
     app.use('/api/filter', FilterRouter)
     app.use('/api/dashboard', DashboardRouter)
+    app.use('/api/voucher', VoucherRouter)
 };
 
 module.exports = routes;

@@ -1,19 +1,21 @@
-import HomePage from "../pages/Homepage/Homepage";
-import OrderPage from "../pages/OrderPage/OrderPage";
-import ProductsPage from "../pages/ProductsPage/ProductsPage";
-import NotFoundPage from "../pages/NotFoundPage/NotFoundPage"
-import TypeProductPage from "../pages/TypeProductPage/TypeProductPage";
-import TopSellingPage from "../pages/TypeProductPage/TopSellingPage";
-import TopNewPage from "../pages/TypeProductPage/TopNewPage";
-import SignInPage from "../pages/SignInPage/SignInPage";
-import SignUpPage from "../pages/SignUpPage/SignUpPage";
-import ProductDetailPage from "../pages/ProductDetailPage/ProductDetailPage";
-import { ProfilePage } from "../pages/Profile/ProfilePage";
-import AdminPage from "../pages/AdminPage/AdminPage";
-import PaymentPage from "../pages/PaymentPage/PaymentPage";
-import OrderSuccess from "../pages/OrderSuccess/OrderSuccess";
-import MyOrderPage from "../pages/MyOrderPage/MyOrderPage";
-import DetailsOrderPage from "../pages/DetailsOrderPage/DetailsOrderPage";
+import { lazy } from 'react';
+
+const HomePage = lazy(() => import('../pages/Homepage/Homepage'));
+const OrderPage = lazy(() => import('../pages/OrderPage/OrderPage'));
+const ProductsPage = lazy(() => import('../pages/ProductsPage/ProductsPage'));
+const NotFoundPage = lazy(() => import('../pages/NotFoundPage/NotFoundPage'));
+const TypeProductPage = lazy(() => import('../pages/TypeProductPage/TypeProductPage'));
+const TopSellingPage = lazy(() => import('../pages/TypeProductPage/TopSellingPage'));
+const TopNewPage = lazy(() => import('../pages/TypeProductPage/TopNewPage'));
+const SignInPage = lazy(() => import('../pages/SignInPage/SignInPage'));
+const SignUpPage = lazy(() => import('../pages/SignUpPage/SignUpPage'));
+const ProductDetailPage = lazy(() => import('../pages/ProductDetailPage/ProductDetailPage'));
+const ProfilePage = lazy(() => import('../pages/Profile/ProfilePage').then((module) => ({ default: module.ProfilePage })));
+const AdminPage = lazy(() => import('../pages/AdminPage/AdminPage'));
+const PaymentPage = lazy(() => import('../pages/PaymentPage/PaymentPage'));
+const OrderSuccess = lazy(() => import('../pages/OrderSuccess/OrderSuccess'));
+const MyOrderPage = lazy(() => import('../pages/MyOrderPage/MyOrderPage'));
+const DetailsOrderPage = lazy(() => import('../pages/DetailsOrderPage/DetailsOrderPage'));
 
 
 export const routes = [

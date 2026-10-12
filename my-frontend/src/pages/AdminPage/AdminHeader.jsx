@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Input, Badge, Dropdown, Avatar, List } from 'antd';
-import { BellOutlined, SearchOutlined } from '@ant-design/icons';
+import { Badge, Dropdown, Avatar, List } from 'antd';
+import { BellOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import * as UserService from '../../service/UserService';
@@ -10,21 +10,18 @@ import { markAllAsRead } from '../../redux/slides/notificationSlice';
 import {
   WrapperHeader,
   WrapperLogo,
-  WrapperSearch,
   WrapperRightSection,
-  WrapperLanguage,
   WrapperUserInfo,
 } from './AdminHeaderStyle';
 
 const HeaderComponent = () => {
   const user = useSelector((state) => state.user);
-  const order = useSelector((state) => state.order);
   const notifications = useSelector((state) => state.notification.notifications);
   const unreadCount = notifications.filter((n) => !n.read).length;
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const [search, setSearch] = useState('');
+
   const [userAvatar, setUserAvatar] = useState('');
   const [userName, setUserName] = useState('');
   const [userRole, setUserRole] = useState('');

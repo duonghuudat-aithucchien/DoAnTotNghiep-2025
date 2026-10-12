@@ -52,6 +52,7 @@ const ProductScrollWithMomentum = ({ children }) => {
       scrollArea.removeEventListener('mouseup', stopDragging);
       scrollArea.removeEventListener('mouseleave', stopDragging);
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleMouseDown = (e) => {

@@ -2,16 +2,27 @@ const User = require("../models/UserModel")
 const bcrypt = require("bcrypt")
 const { genneralAccessToken, genneralRefreshToken } = require("./JwtService")
 
+const PUBLIC_USER_FIELDS = 'name email isAdmin phone address avatar city createdAt updatedAt'
+const ALLOWED_PROFILE_FIELDS = ['name', 'phone', 'address', 'avatar', 'city']
+
+const toPublicUser = (user) => {
+    if (!user) return null
+    const value = user.toObject ? user.toObject() : { ...user }
+    delete value.password
+    delete value.__v
+    return value
+}
+
 const creatUser = (newUser) => {
     return new Promise(async (resolve, reject) => {
         const { name, email, password, confirmPassword, phone} =newUser
 
         try {
             const checkUser = await User.findOne({
-                email: email
+                email: email.toLowerCase().trim()
             })
            if(checkUser !== null) {
-                resolve({
+                return resolve({
                     status: 'ERR',
                     message: 'The email is already'
                 })
@@ -23,10 +34,9 @@ const creatUser = (newUser) => {
         //     });
         // }
            const hash = bcrypt.hashSync(password, 10) // ma hoa password
-           console.log('hash', hash)
             const createdUser = await User.create({
                 name, 
-                email, 
+                email: email.toLowerCase().trim(),
                 password: hash, 
                 confirmPassword: hash, 
                 phone
@@ -35,7 +45,7 @@ const creatUser = (newUser) => {
                 resolve({
                     status: 'OK',
                     message: 'SUCCESS',
-                    data: createdUser
+                    data: toPublicUser(createdUser)
                 })
             }
         } catch (e) {
@@ -50,19 +60,17 @@ const loginUser = (userLogin) => {
 
         try {
             const checkUser = await User.findOne({
-                email: email
-            })
+                email: email.toLowerCase().trim()
+            }).select('+password')
            if(checkUser === null) {
-                resolve({
+                return resolve({
                     status: 'ERR',
                     message: 'The user is not defined'
                 })
            }
            const comparePassword = bcrypt.compareSync(password, checkUser.password)
-           console.log('comparePassword', comparePassword)           
-
             if(!comparePassword) {
-                resolve({
+                return resolve({
                     status: 'ERR',
                     message: 'The password or user is incorrect'
                 })
@@ -71,15 +79,14 @@ const loginUser = (userLogin) => {
             //Xac thuc jwt jsonwebtoken
             const access_token = await genneralAccessToken({
                 id: checkUser.id,
-                isAdmin: checkUser.isAdmin 
+                isAdmin: checkUser.isAdmin === true
             })
 
             const refresh_token = await genneralRefreshToken({
                 id: checkUser.id,
-                isAdmin: checkUser.isAdmin 
+                isAdmin: checkUser.isAdmin === true
             })
 
-            console.log('access_token', access_token)            
             resolve({
                 status: 'OK',
                 message: 'SUCCESS',
@@ -108,11 +115,18 @@ const updateUser = (id, data) => {
                 })
             }
 
-            const updatedUser = await User.findByIdAndUpdate(id, data, { new: true})
+            const safeUpdates = ALLOWED_PROFILE_FIELDS.reduce((result, field) => {
+                if (Object.prototype.hasOwnProperty.call(data, field)) result[field] = data[field]
+                return result
+            }, {})
+            const updatedUser = await User.findByIdAndUpdate(id, safeUpdates, {
+                new: true,
+                runValidators: true,
+            }).select(PUBLIC_USER_FIELDS)
             resolve({
                 status: 'OK',
                 message: 'SUCCESS',
-                data: updatedUser
+                data: toPublicUser(updatedUser)
                      
             })
             //
@@ -155,7 +169,7 @@ const deleteManyUser = (ids) => {
     return new Promise(async (resolve, reject) => {
 
         try {
-            await User.deleteManyUser({_id: ids})
+            await User.deleteMany({ _id: { $in: ids } })
             resolve({
                 status: 'OK',
                 message: 'Delete SUCCESS'
@@ -173,11 +187,11 @@ const getAllUser = () => {
     return new Promise(async (resolve, reject) => {
 
         try {
-            const allUser = await User.find()
+            const allUser = await User.find().select(PUBLIC_USER_FIELDS)
             resolve({
                 status: 'OK',
                 message: 'SUCCESS',
-                data: allUser
+                data: allUser.map(toPublicUser)
                      
             })
             //
@@ -194,7 +208,7 @@ const getDetailUser = (id) => {
         try {
             const user = await User.findOne({
                 _id: id
-            })
+            }).select(PUBLIC_USER_FIELDS)
             if(user === null) {
                 resolve({
                     status: 'OK',
@@ -205,7 +219,7 @@ const getDetailUser = (id) => {
             resolve({
                 status: 'OK',
                 message: 'SUCCESS',
-                data: user
+                data: toPublicUser(user)
                      
             })            
         } catch (e) {

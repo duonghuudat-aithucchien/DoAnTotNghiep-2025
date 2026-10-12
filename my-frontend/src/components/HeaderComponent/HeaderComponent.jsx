@@ -16,7 +16,7 @@ import {
   TopBanner,
   CloseIcon,
 } from './style';
-import { CaretDownOutlined, ShoppingCartOutlined, UserOutlined, DownOutlined  } from '@ant-design/icons';
+import { ShoppingCartOutlined, UserOutlined, DownOutlined  } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import * as UserService from '../../service/UserService';

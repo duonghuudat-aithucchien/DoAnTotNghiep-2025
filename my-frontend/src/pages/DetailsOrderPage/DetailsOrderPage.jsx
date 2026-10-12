@@ -17,9 +17,7 @@ import {
   WrapperItem,
   PriceRow,
   PriceLabel,
-  PriceValue, 
-  WrapperFooter,
-  WrapperActions,
+  PriceValue,
 } from './style';
 import { useLocation, useParams } from 'react-router-dom';
 import * as OrderService from '../../service/OrderService';

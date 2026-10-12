@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react' 
+import React, { useEffect, useState } from 'react'
 import {Col, Row, Image, Rate} from 'antd'
 import { WrapperStyleNameProduct, WrapperStyleTextSell, WrapperPriceProduct, WrapperPriceTextProduct, WrapperQualityProduct, WrapperInputNumber } from './style'
 import { MinusOutlined, PlusOutlined } from '@ant-design/icons'
@@ -47,6 +47,7 @@ const ProductDetailComponent = ({idProduct}) => {
         } else if(productDetails?.countInStock === 0) {
             setErrorLimitOrder(true)
         }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [numProduct])
 
     useEffect(() => {
@@ -54,8 +55,9 @@ const ProductDetailComponent = ({idProduct}) => {
             message.success('Thêm sản phẩm vào giỏ hàng thành công')
         }
         return () => {
-            dispatch(resetOrder)
+            dispatch(resetOrder())
         }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     },[order.isSuccessOrder])
 
     const handleChangeCount = (type, limited) => {
@@ -120,27 +122,10 @@ const ProductDetailComponent = ({idProduct}) => {
         }
     };
 
-    const priceMemo = useMemo(() => {
-        const result = order?.orderItemsSelected?.reduce((total, cur) => {
-          return total + ((cur.price * cur.amount))
-        },0)
-        return result
-      }, [order])
-    
-      const priceDiscountMemo = useMemo(() => {
-        const result = order?.orderItemsSelected?.reduce((total, cur) => {
-          return total + ((cur.price * cur.amount * cur.discount)/100)
-        },0)
-        if(Number(result)) {
-          return result
-        }
-        return 0
-      }, [order])
+
     
     
-      const totalPriceMemo = useMemo(() => {
-        return Number(priceMemo) - Number(priceDiscountMemo)
-      }, [priceMemo, priceDiscountMemo])
+
 
         useEffect(() => {
         if (productDetails?.image) {

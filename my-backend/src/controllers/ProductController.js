@@ -26,8 +26,8 @@ const mongoose = require('mongoose')
 const createProduct = async (req, res) => {
     try {
         const { name, image, type, price, countInStock, rating, description, discount, sizes, colors, subImages } = req.body
-        if (!name || !image || !type || !price || !countInStock || !rating || !discount || !sizes || !colors) {
-            return res.status(200).json({
+        if (!name || !image || !type || price == null || countInStock == null || rating == null || discount == null || !sizes || !colors) {
+            return res.status(400).json({
                 status: 'ERR',
                 message: 'The input is required'
             })
@@ -201,7 +201,6 @@ const addReview = async (req, res) => {
         const { rating, comment } = req.body;
         const userId = req.user.id;
 
-        console.log('Calling ProductService with:', { productId, userId, rating, comment });
         const response = await ProductService.addReview(productId, userId, rating, comment);
         if (response.status === 'ERR') {
             const statusCode = response.message.includes('not found') ? 404 : 400;

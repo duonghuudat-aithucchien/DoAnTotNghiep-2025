@@ -2,7 +2,6 @@
 import React, { useEffect, useState, Suspense } from 'react'
 import {
   WrapperButtonMore,
-  WrapperProducts,
   WrapperSection,
   SectionTitle,
   WrapperProductsSearch,
@@ -21,12 +20,12 @@ const FlashSaleCountdown1 = React.lazy(() => import('./FlashSaleCountdown'));
 const HomePage = () => {
   const searchProduct = useSelector((state) => state?.product?.search)
   const searchDebounce = useDebounce(searchProduct, 500)
-  const [limit, setLimit] = useState(5)
+  const [, setLimit] = useState(5)
   const [typeProducts, setTypeProducts] = useState([])
   const [productLimits, setProductLimits] = useState({})
-  const [productsByType, setProductsByType] = useState({})
+  const [, setProductsByType] = useState({})
   const [loadingTypes, setLoadingTypes] = useState({})
-  const [allLoaded, setAllLoaded] = useState({})
+  const [, setAllLoaded] = useState({})
   const [searchResults, setSearchResults] = useState([])
   const [searchAllLoaded, setSearchAllLoaded] = useState(false)
   const [fetchKey, setFetchKey] = useState(0) // Trigger reload products

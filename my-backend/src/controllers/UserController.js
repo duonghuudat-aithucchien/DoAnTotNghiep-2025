@@ -21,6 +21,11 @@ const creatUser = async (req, res) => {
                 status: 'ERR',
                 message: 'The password is equal confirmPassword'
             })
+        } else if(password.length < 8) {
+            return res.status(400).json({
+                status: 'ERR',
+                message: 'Mật khẩu phải có ít nhất 8 ký tự'
+            })
         }
         console.log('isCheckEmail', isCheckEmail)
         const response = await UserService.creatUser(req.body)
@@ -55,8 +60,10 @@ const loginUser = async (req, res) => {
         //console.log('response', response)
         res.cookie('refresh_token', refresh_token, {
             httpOnly: true,
-            secure: false,
-            samesite: 'strict'
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+            maxAge: 7 * 24 * 60 * 60 * 1000,
+            path: '/api/user'
         })
         return res.status(200).json(newResponse)
     } catch (e) {
@@ -183,7 +190,7 @@ const refreshToken = async (req, res) => {
 
 const logoutUser = async (req, res) => {
     try {       
-        res.clearCookie('refresh_token')
+        res.clearCookie('refresh_token', { path: '/api/user' })
         return res.status(200).json({
             status: 'OK',
             message: 'Logout successfully'

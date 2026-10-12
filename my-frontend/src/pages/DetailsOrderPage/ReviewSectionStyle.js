@@ -301,4 +301,5 @@ export const ReviewSubmittedText = styled.p`
   margin: 0;
 `;
 
-export default {};
+const ReviewSectionStyle = {};
+export default ReviewSectionStyle;

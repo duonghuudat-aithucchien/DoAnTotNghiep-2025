@@ -1,60 +1,107 @@
 const jwt = require('jsonwebtoken')
-const dotenv = require('dotenv')
-dotenv.config()
 
 const authMiddleware = (req, res, next) => {
-    const token = req.headers.token.split(' ')[1]
-    jwt.verify(token, process.env.ACCESS_TOKEN, function (err, user) {
-        if (err) {
-            return res.status(404).json({
-                message: 'The authemtication',
+    try {
+        const headerToken = req.headers.token || req.headers.authorization
+        if (!headerToken) {
+            return res.status(401).json({
+                message: 'Authentication token is required',
                 status: 'ERROR'
             })
         }
+        const token = headerToken.includes(' ') ? headerToken.split(' ')[1] : headerToken
+        jwt.verify(token, process.env.ACCESS_TOKEN, function (err, user) {
+            if (err) {
+                return res.status(401).json({
+                    message: 'The authentication is invalid or expired',
+                    status: 'ERROR'
+                })
+            }
 
-        if(user?.isAdmin) {
-            next()
-        }else {
-            return res.status(404).json({
-                message: 'The authemtication',
-                status: 'ERROR'
-            })
-        }
-        
-    });
-
-    
+            if (user?.isAdmin === true) {
+                req.user = user
+                next()
+            } else {
+                return res.status(403).json({
+                    message: 'Admin permission required',
+                    status: 'ERROR'
+                })
+            }
+        });
+    } catch (e) {
+        return res.status(500).json({
+            message: 'Server auth error',
+            status: 'ERROR'
+        })
+    }
 }
 
 const authUserMiddleware = (req, res, next) => {
-    const token = req.headers.token.split(' ')[1]
-    const userId = req.params.id
-    jwt.verify(token, process.env.ACCESS_TOKEN, function (err, user) {
-        if (err) {
-            return res.status(404).json({
-                message: 'The authemtication',
+    try {
+        const headerToken = req.headers.token || req.headers.authorization
+        if (!headerToken) {
+            return res.status(401).json({
+                message: 'Authentication token is required',
                 status: 'ERROR'
             })
         }
+        const token = headerToken.includes(' ') ? headerToken.split(' ')[1] : headerToken
+        jwt.verify(token, process.env.ACCESS_TOKEN, function (err, user) {
+            if (err) {
+                return res.status(401).json({
+                    message: 'The authentication is invalid or expired',
+                    status: 'ERROR'
+                })
+            }
 
-        if(user?.isAdmin || user?.id === userId) {
+            req.user = user
+            if (user?.isAdmin === true) {
+                return next()
+            }
+
+            // Với route user: req.params.id là userId
+            if (req.baseUrl?.includes('user')) {
+                if (req.params.id && user?.id === req.params.id) {
+                    return next()
+                }
+                return res.status(403).json({
+                    message: 'Permission denied for user resource',
+                    status: 'ERROR'
+                })
+            }
+
+            // Với route order:
+            // 1. Tạo đơn: nếu req.body.user được truyền thì phải khớp user.id
+            if (req.body?.user && req.body.user !== user?.id) {
+                return res.status(403).json({
+                    message: 'Cannot place order for another user',
+                    status: 'ERROR'
+                })
+            }
+
+            // 2. Lấy đơn hàng theo user: /get-all-order/:id -> req.params.id phải khớp user.id
+            if (req.path?.includes('get-all-order') && req.params.id && req.params.id !== user?.id) {
+                return res.status(403).json({
+                    message: 'Cannot view orders of another user',
+                    status: 'ERROR'
+                })
+            }
+
+            // 3. Các thao tác khác của order: người dùng đã xác thực hợp lệ
             next()
-        }else {
-            return res.status(404).json({
-                message: 'The authemtication',
-                status: 'ERROR'
-            })
-        }
-        
-    });
-  
+        });
+    } catch (e) {
+        return res.status(500).json({
+            message: 'Server auth error',
+            status: 'ERROR'
+        })
+    }
 }
 
 const authReviewMiddleware = (req, res, next) => {
     try {
-        console.log('Using ACCESS_TOKEN:', process.env.ACCESS_TOKEN);
-        const token = req.headers.token?.split(' ')[1];
-        console.log('Received token:', token);
+        const headerToken = req.headers.token || req.headers.authorization;
+        const token = headerToken?.includes(' ') ? headerToken.split(' ')[1] : headerToken;
         if (!token) {
             return res.status(401).json({
                 message: 'Authentication token is required',
@@ -63,12 +110,10 @@ const authReviewMiddleware = (req, res, next) => {
         }
 
         jwt.verify(token, process.env.ACCESS_TOKEN, function (err, user) {
-            console.log('JWT verify result:', { err, user });
             if (err) {
-                return res.status(403).json({
+                return res.status(401).json({
                     message: 'Invalid or expired token',
                     status: 'ERROR',
-                    errorDetails: err.message,
                 });
             }
             if (!user?.id) {
@@ -77,19 +122,14 @@ const authReviewMiddleware = (req, res, next) => {
                     status: 'ERROR',
                 });
             }
-            req.user = { id: user.id, isAdmin: user.isAdmin }; // Chuẩn hóa req.user
+            req.user = { id: user.id, isAdmin: user.isAdmin === true };
             next();
         });
     } catch (e) {
-        console.error('Error in authReviewMiddleware:', {
-            error: e.message,
-            stack: e.stack,
-            token: req.headers.token,
-        });
+        console.error('Authentication error:', e.message);
         return res.status(500).json({
             status: 'ERR',
             message: 'Authentication error',
-            errorDetails: e.message,
         });
     }
 };
