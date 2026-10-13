@@ -9,6 +9,7 @@ router.get('/get-details-order/:id', authUserMiddleware, OrderController.getDeta
 router.delete('/cancel-order/:id', authUserMiddleware, OrderController.cancelOrderDetails)
 router.get('/get-all-order', authMiddleware, OrderController.getAllOrder)
 router.put('/update-status/:id', authMiddleware, OrderController.updateOrderStatus)
+router.put('/tracking/:id', authMiddleware, OrderController.addTrackingEvent)
 
 
 

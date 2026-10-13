@@ -12,12 +12,14 @@ const filterProducts = (filters = {}, limit, page, sort) => {
 
       // Colors filter
       if (Array.isArray(filters.colors) && filters.colors.length > 0) {
-        query.colors = { $in: filters.colors };
+        query.$and = query.$and || [];
+        query.$and.push({ $or: [{ colors: { $in: filters.colors } }, { 'variants.color': { $in: filters.colors } }] });
       }
 
       // Sizes filter
       if (Array.isArray(filters.sizes) && filters.sizes.length > 0) {
-        query.sizes = { $in: filters.sizes };
+        query.$and = query.$and || [];
+        query.$and.push({ $or: [{ sizes: { $in: filters.sizes } }, { 'variants.size': { $in: filters.sizes } }] });
       }
 
       // Rating filter
@@ -37,6 +39,10 @@ const filterProducts = (filters = {}, limit, page, sort) => {
         resultQuery = resultQuery.sort({ price: 1 });
       } else if (sort === 'desc') {
         resultQuery = resultQuery.sort({ price: -1 });
+      } else if (sort === 'selled') {
+        resultQuery = resultQuery.sort({ selled: -1 });
+      } else if (sort === 'createdAt') {
+        resultQuery = resultQuery.sort({ createdAt: -1 });
       }
 
       const data = await resultQuery;

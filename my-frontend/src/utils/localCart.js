@@ -1,13 +1,18 @@
-// Lưu giỏ hàng vào localStorage theo user ID
+export const GUEST_CART_KEY = 'cart_guest';
+
+const getCartKey = (userId) => userId ? `cart_${userId}` : GUEST_CART_KEY;
+
 export const saveCartToLocal = (userId, cartData) => {
-  if (userId) {
-    localStorage.setItem(`cart_${userId}`, JSON.stringify(cartData));
+  localStorage.setItem(getCartKey(userId), JSON.stringify(cartData));
+};
+
+export const getCartFromLocal = (userId) => {
+  try {
+    const data = localStorage.getItem(getCartKey(userId));
+    return data ? JSON.parse(data) : [];
+  } catch {
+    return [];
   }
 };
 
-// Lấy giỏ hàng từ localStorage theo user ID
-export const getCartFromLocal = (userId) => {
-  if (!userId) return [];
-  const data = localStorage.getItem(`cart_${userId}`);
-  return data ? JSON.parse(data) : [];
-};
+export const clearGuestCart = () => localStorage.removeItem(GUEST_CART_KEY);

@@ -1,126 +1,57 @@
-const OrderService = require('../services/OrderService')
+const OrderService = require('../services/OrderService');
+const { sendError, sendServiceResult } = require('../utils/httpResponse');
+
+const serverError = (res) => sendError(res, 'Lỗi máy chủ. Vui lòng thử lại sau.', 500);
 
 const createOrder = async (req, res) => {
-    try {
-        const {orderItems, paymentMethod, fullName, address, city, phone} = req.body
-        // if(!orderItems || !Array.isArray(orderItems) || orderItems.length === 0 || !paymentMethod || !itemsPrice || !shippingPrice || !totalPrice || !fullName || !address || !city || !phone || !email) {
-        if (
-            !orderItems || !Array.isArray(orderItems) || orderItems.length === 0 ||
-            !paymentMethod || !fullName || !address || !city || !phone
-            ) 
-        {                 
-            return res.status(200).json({
-                status: 'ERR',
-                message: 'The input is required'
-            })
-        } 
-        const response = await OrderService.createOrder(req.body, req.user.id)
-        return res.status(response.status === 'OK' ? 201 : 400).json(response)
-    } catch (e) {
-        return res.status(404).json({
-            message: e
-        })        
+  try {
+    const { orderItems, paymentMethod, fullName, address, city, phone } = req.body;
+    if (!Array.isArray(orderItems) || !orderItems.length || !paymentMethod || !fullName || !address || !city || !phone) {
+      return sendError(res, 'Thông tin đơn hàng chưa đầy đủ', 400);
     }
-}
+    return sendServiceResult(res, await OrderService.createOrder(req.body, req.user.id), { successStatus: 201 });
+  } catch { return serverError(res); }
+};
 
 const updateOrderStatus = async (req, res) => {
-    try {
-        const { id } = req.params;
-        const { status } = req.body;
+  try {
+    const valid = ['pending', 'confirmed', 'shipping', 'delivered', 'cancelled'];
+    if (!valid.includes(req.body.status)) return sendError(res, 'Trạng thái không hợp lệ', 400);
+    return sendServiceResult(res, await OrderService.updateOrderStatus(req.params.id, req.body.status, req.body, req.user.id));
+  } catch { return serverError(res); }
+};
 
-        if (!status) {
-            return res.status(400).json({ status: 'ERR', message: 'Trạng thái mới là bắt buộc' });
-        }
-
-        const validStatuses = ['pending', 'confirmed', 'shipping', 'delivered', 'cancelled'];
-        if (!validStatuses.includes(status)) {
-            return res.status(400).json({ status: 'ERR', message: 'Trạng thái không hợp lệ' });
-        }
-
-        const response = await OrderService.updateOrderStatus(id, status);
-        return res.status(200).json(response);
-    } catch (error) {
-        return res.status(500).json({ status: 'ERR', message: 'Lỗi máy chủ', error: error.message });
-    }
+const addTrackingEvent = async (req, res) => {
+  try {
+    return sendServiceResult(res, await OrderService.addTrackingEvent(req.params.id, req.body, req.user.id));
+  } catch { return serverError(res); }
 };
 
 const getAllDetailsOrder = async (req, res) => {
-    try {
-        const userId = req.params.id
-       
-        if(!userId) {
-            return res.status(200).json({
-                status: 'ERR',
-                message: 'The userId is required'
-            })
-        }
-        const response = await OrderService.getAllDetailsOrder(userId)
-        return res.status(200).json(response)
-    } catch (e) {
-        return res.status(404).json({
-            message: e
-        })
-        
-    }
-}
+  try {
+    if (!req.params.id) return sendError(res, 'Thiếu mã người dùng', 400);
+    if (req.user.isAdmin !== true && String(req.user.id) !== String(req.params.id)) return sendError(res, 'Không có quyền truy cập đơn hàng này', 403);
+    return sendServiceResult(res, await OrderService.getAllDetailsOrder(req.params.id));
+  } catch { return serverError(res); }
+};
 
 const getDetailsOrder = async (req, res) => {
-    try {
-        const orderId = req.params.id
-        if(!orderId) {
-            return res.status(200).json({
-                status: 'ERR',
-                message: 'The orderId is required'
-            })
-        }
-        const response = await OrderService.getOrderDetails(orderId, req.user)
-        return res.status(200).json(response)
-    } catch (e) {
-        return res.status(404).json({
-            message: e
-        })
-        
-    }
-}
+  try {
+    if (!req.params.id) return sendError(res, 'Thiếu mã đơn hàng', 400);
+    return sendServiceResult(res, await OrderService.getOrderDetails(req.params.id, req.user), { errorStatus: 404 });
+  } catch { return serverError(res); }
+};
 
 const cancelOrderDetails = async (req, res) => {
-    try {
-        const orderId = req.params.id
-        if(!orderId) {
-            return res.status(200).json({
-                status: 'ERR',
-                message: 'The orderId is required'
-            })
-        }
-        const response = await OrderService.cancelOrderDetails(orderId, req.user)
-        return res.status(200).json(response)
-    } catch (e) {
-        return res.status(404).json({
-            message: e
-        })
-        
-    }
-}
+  try {
+    if (!req.params.id) return sendError(res, 'Thiếu mã đơn hàng', 400);
+    return sendServiceResult(res, await OrderService.cancelOrderDetails(req.params.id, req.user));
+  } catch { return serverError(res); }
+};
 
 const getAllOrder = async (req, res) => {
-    try {
-        const data = await OrderService.getAllOrder()
-        return res.status(200).json(data)
-    } catch (e) {
-        return res.status(404).json({
-            message: e
-        })
-        
-    }
-}
+  try { return sendServiceResult(res, await OrderService.getAllOrder()); }
+  catch { return serverError(res); }
+};
 
-
-
-module.exports = {
-    createOrder,
-    getAllDetailsOrder,
-    getDetailsOrder,
-    cancelOrderDetails,
-    getAllOrder,
-    updateOrderStatus
-}
+module.exports = { createOrder, getAllDetailsOrder, getDetailsOrder, cancelOrderDetails, getAllOrder, updateOrderStatus, addTrackingEvent };

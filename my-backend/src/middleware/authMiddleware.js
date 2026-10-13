@@ -1,143 +1,46 @@
-const jwt = require('jsonwebtoken')
+const jwt = require('jsonwebtoken');
+const { sendError } = require('../utils/httpResponse');
 
-const authMiddleware = (req, res, next) => {
-    try {
-        const headerToken = req.headers.token || req.headers.authorization
-        if (!headerToken) {
-            return res.status(401).json({
-                message: 'Authentication token is required',
-                status: 'ERROR'
-            })
-        }
-        const token = headerToken.includes(' ') ? headerToken.split(' ')[1] : headerToken
-        jwt.verify(token, process.env.ACCESS_TOKEN, function (err, user) {
-            if (err) {
-                return res.status(401).json({
-                    message: 'The authentication is invalid or expired',
-                    status: 'ERROR'
-                })
-            }
-
-            if (user?.isAdmin === true) {
-                req.user = user
-                next()
-            } else {
-                return res.status(403).json({
-                    message: 'Admin permission required',
-                    status: 'ERROR'
-                })
-            }
-        });
-    } catch (e) {
-        return res.status(500).json({
-            message: 'Server auth error',
-            status: 'ERROR'
-        })
-    }
-}
-
-const authUserMiddleware = (req, res, next) => {
-    try {
-        const headerToken = req.headers.token || req.headers.authorization
-        if (!headerToken) {
-            return res.status(401).json({
-                message: 'Authentication token is required',
-                status: 'ERROR'
-            })
-        }
-        const token = headerToken.includes(' ') ? headerToken.split(' ')[1] : headerToken
-        jwt.verify(token, process.env.ACCESS_TOKEN, function (err, user) {
-            if (err) {
-                return res.status(401).json({
-                    message: 'The authentication is invalid or expired',
-                    status: 'ERROR'
-                })
-            }
-
-            req.user = user
-            if (user?.isAdmin === true) {
-                return next()
-            }
-
-            // Với route user: req.params.id là userId
-            if (req.baseUrl?.includes('user')) {
-                if (req.params.id && user?.id === req.params.id) {
-                    return next()
-                }
-                return res.status(403).json({
-                    message: 'Permission denied for user resource',
-                    status: 'ERROR'
-                })
-            }
-
-            // Với route order:
-            // 1. Tạo đơn: nếu req.body.user được truyền thì phải khớp user.id
-            if (req.body?.user && req.body.user !== user?.id) {
-                return res.status(403).json({
-                    message: 'Cannot place order for another user',
-                    status: 'ERROR'
-                })
-            }
-
-            // 2. Lấy đơn hàng theo user: /get-all-order/:id -> req.params.id phải khớp user.id
-            if (req.path?.includes('get-all-order') && req.params.id && req.params.id !== user?.id) {
-                return res.status(403).json({
-                    message: 'Cannot view orders of another user',
-                    status: 'ERROR'
-                })
-            }
-
-            // 3. Các thao tác khác của order: người dùng đã xác thực hợp lệ
-            next()
-        });
-    } catch (e) {
-        return res.status(500).json({
-            message: 'Server auth error',
-            status: 'ERROR'
-        })
-    }
-}
-
-const authReviewMiddleware = (req, res, next) => {
-    try {
-        const headerToken = req.headers.token || req.headers.authorization;
-        const token = headerToken?.includes(' ') ? headerToken.split(' ')[1] : headerToken;
-        if (!token) {
-            return res.status(401).json({
-                message: 'Authentication token is required',
-                status: 'ERROR',
-            });
-        }
-
-        jwt.verify(token, process.env.ACCESS_TOKEN, function (err, user) {
-            if (err) {
-                return res.status(401).json({
-                    message: 'Invalid or expired token',
-                    status: 'ERROR',
-                });
-            }
-            if (!user?.id) {
-                return res.status(403).json({
-                    message: 'Token does not contain user ID',
-                    status: 'ERROR',
-                });
-            }
-            req.user = { id: user.id, isAdmin: user.isAdmin === true };
-            next();
-        });
-    } catch (e) {
-        console.error('Authentication error:', e.message);
-        return res.status(500).json({
-            status: 'ERR',
-            message: 'Authentication error',
-        });
-    }
+const readAccessToken = (req, res) => {
+  const header = req.headers.token || req.headers.authorization;
+  if (!header) {
+    sendError(res, 'Cần đăng nhập để tiếp tục', 401);
+    return null;
+  }
+  const token = header.includes(' ') ? header.split(' ')[1] : header;
+  try { return jwt.verify(token, process.env.ACCESS_TOKEN); }
+  catch { sendError(res, 'Phiên đăng nhập không hợp lệ hoặc đã hết hạn', 401); return null; }
 };
 
+const authMiddleware = (req, res, next) => {
+  const user = readAccessToken(req, res);
+  if (!user) return;
+  if (user.isAdmin !== true) return sendError(res, 'Cần quyền quản trị viên', 403);
+  req.user = user;
+  return next();
+};
 
+const authUserMiddleware = (req, res, next) => {
+  const user = readAccessToken(req, res);
+  if (!user) return;
+  req.user = user;
+  if (user.isAdmin === true) return next();
 
-module.exports = {
-    authMiddleware,
-    authUserMiddleware,
-    authReviewMiddleware
-}
+  if (req.baseUrl?.includes('user')) {
+    if (req.params.id && user.id === req.params.id) return next();
+    return sendError(res, 'Không có quyền truy cập tài nguyên người dùng này', 403);
+  }
+  if (req.body?.user && String(req.body.user) !== String(user.id)) return sendError(res, 'Không thể đặt hàng cho tài khoản khác', 403);
+  if (req.path?.includes('get-all-order') && req.params.id && String(req.params.id) !== String(user.id)) return sendError(res, 'Không thể xem đơn hàng của tài khoản khác', 403);
+  return next();
+};
+
+const authReviewMiddleware = (req, res, next) => {
+  const user = readAccessToken(req, res);
+  if (!user) return;
+  if (!user.id) return sendError(res, 'Token không có mã người dùng', 403);
+  req.user = { id: user.id, isAdmin: user.isAdmin === true };
+  return next();
+};
+
+module.exports = { authMiddleware, authUserMiddleware, authReviewMiddleware };

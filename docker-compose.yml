@@ -9,6 +9,12 @@ services:
   chatbot:
     build: ./chatbot
     env_file: ./chatbot/.env
+    environment:
+      BACKEND_API_URL: http://backend:3001/api
+      BACKEND_AUTH_ENV_FILE: ""
+    volumes:
+      - chatbot-model-cache:/root/.cache/huggingface
+      - chatbot-vector-cache:/app/.cache
     ports:
       - "5000:5000"
     restart: unless-stopped
@@ -25,3 +31,7 @@ services:
       - backend
       - chatbot
     restart: unless-stopped
+
+volumes:
+  chatbot-model-cache:
+  chatbot-vector-cache:

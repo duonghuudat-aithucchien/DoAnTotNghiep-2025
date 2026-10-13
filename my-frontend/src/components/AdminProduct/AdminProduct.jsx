@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { WrapperHeader, AddButton, PlusIcon, WrapperTableContainer, WrapperHeaderContainer, WrapperButtons} from './style'
-import { Button, Form, Select, Space } from 'antd'
+import { Button, Form, Input, Select, Space } from 'antd'
 import { DeleteOutlined, EditOutlined, PlusOutlined, SearchOutlined, UploadOutlined } from '@ant-design/icons'
 import TableComponent from '../TableComponent/TableComponent'
 import InputComponent from '../InputComponent/InputComponent'
@@ -37,7 +37,8 @@ const AdminProduct = () => {
         newType: '',
         discount: '',
         sizes: '',
-        colors: ''
+        colors: '',
+        variantsText: ''
     })
 
     const [stateProduct, setStateProduct] = useState(inittial())
@@ -47,9 +48,9 @@ const AdminProduct = () => {
 
     const mutation = useMutationHooks(
         (data) => {
-            const {name, price, description, rating, image, subImages, type, countInStock, discount, sizes, colors} =data
+            const {name, price, description, rating, image, subImages, type, countInStock, discount, sizes, colors, variants} =data
             const res = ProductService.createProduct({
-                name, price, description, rating, image, subImages, type, countInStock, discount, sizes, colors
+                name, price, description, rating, image, subImages, type, countInStock, discount, sizes, colors, variants
             }, user?.access_token)
             return res
         },
@@ -131,6 +132,9 @@ const AdminProduct = () => {
         : typeof res.data?.colors === 'string'
             ? res.data.colors.split(',')
             : [],
+                    variantsText: (res?.data?.variants || []).map((variant) =>
+                        [variant.sku, variant.size, variant.color, variant.price, variant.stock, variant.image || ''].join('|')
+                    ).join('\n'),
                 });
             }
             setIsPendingUpdate(false)
@@ -415,7 +419,8 @@ const AdminProduct = () => {
             countInStock: '',
             discount: '',
             sizes: '',
-            colors: ''
+            colors: '',
+            variantsText: ''
         })
         form.resetFields()
 
@@ -446,12 +451,18 @@ const AdminProduct = () => {
             countInStock: '',
             discount: '',
             sizes: '',
-            colors: ''
+            colors: '',
+            variantsText: ''
         })
         form.resetFields()
 
     }
     
+    const parseVariants = (text) => String(text || '').split('\n').map((line) => line.trim()).filter(Boolean).map((line) => {
+        const [sku, size, color, price, stock, image = ''] = line.split('|').map((part) => part.trim())
+        return { sku, size, color, price: Number(price), stock: Number(stock), image }
+    })
+
     const onFinish = () => {
         const params = {
             name: stateProduct.name,
@@ -464,7 +475,8 @@ const AdminProduct = () => {
             countInStock: stateProduct.countInStock,
             discount: stateProduct.discount,
             sizes: stateProduct.sizes,
-            colors: stateProduct.colors
+            colors: stateProduct.colors,
+            variants: parseVariants(stateProduct.variantsText)
         }
         mutation.mutate(params, {
             onSettled: () => {
@@ -508,7 +520,7 @@ const AdminProduct = () => {
         }
 
         const onUpdateProduct = () => {
-            mutationUpdate.mutate({id: rowSelected, token: user?.access_token, ...stateProductDetails}, {
+            mutationUpdate.mutate({id: rowSelected, token: user?.access_token, ...stateProductDetails, variants: parseVariants(stateProductDetails.variantsText)}, {
                 onSettled: () => {
                    queryProduct.refetch()
                 }
@@ -708,6 +720,15 @@ const AdminProduct = () => {
                     ]}
                 >
                 <InputComponent value={stateProduct.countInStock} onChange={handleOnchange} name="countInStock"/>
+                </Form.Item>
+
+                <Form.Item label="Biến thể" extra="Mỗi dòng: SKU|Size|Màu|Giá|Tồn kho|URL ảnh. Khi có biến thể, tổng kho được tự tính.">
+                    <Input.TextArea
+                        rows={5}
+                        value={stateProduct.variantsText}
+                        onChange={(e) => setStateProduct({ ...stateProduct, variantsText: e.target.value })}
+                        placeholder={'AO-DEN-M|M|Đen|250000|10|https://...\nAO-DEN-L|L|Đen|250000|8|'}
+                    />
                 </Form.Item>
 
                 <Form.Item
@@ -917,6 +938,14 @@ const AdminProduct = () => {
                     ]}
                 >
                 <InputComponent value={stateProductDetails.countInStock} onChange={handleOnchangeDetails} name="countInStock"/>
+                </Form.Item>
+
+                <Form.Item label="Biến thể" extra="Mỗi dòng: SKU|Size|Màu|Giá|Tồn kho|URL ảnh.">
+                    <Input.TextArea
+                        rows={5}
+                        value={stateProductDetails.variantsText}
+                        onChange={(e) => setStateProductDetails({ ...stateProductDetails, variantsText: e.target.value })}
+                    />
                 </Form.Item>
 
                 <Form.Item

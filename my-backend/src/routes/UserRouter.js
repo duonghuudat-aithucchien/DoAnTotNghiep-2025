@@ -7,6 +7,8 @@ const authRateLimit = createRateLimit({ windowMs: 15 * 60 * 1000, max: 20 })
 
 router.post('/sign-up', authRateLimit, userController.creatUser)
 router.post('/sign-in', authRateLimit, userController.loginUser)
+router.post('/forgot-password', authRateLimit, userController.forgotPassword)
+router.post('/reset-password/:token', authRateLimit, userController.resetPassword)
 router.post('/log-out', userController.logoutUser)
 router.put('/update-user/:id', authUserMiddleware, userController.updateUser)
 router.delete('/delete-user/:id',authMiddleware, userController.deleteUser)

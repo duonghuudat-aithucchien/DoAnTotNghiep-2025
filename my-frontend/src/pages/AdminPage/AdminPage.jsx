@@ -16,7 +16,7 @@ import {
 } from './style'
 
 import { getItem } from '../../utils'
-import { ArrowUpOutlined, ArrowDownOutlined, UserOutlined, ShoppingCartOutlined, PieChartOutlined, AppstoreOutlined, SettingOutlined, GiftOutlined } from '@ant-design/icons';
+import { ArrowUpOutlined, ArrowDownOutlined, UserOutlined, ShoppingCartOutlined, PieChartOutlined, AppstoreOutlined, SettingOutlined, GiftOutlined, SwapOutlined } from '@ant-design/icons';
 import { Menu, Row, Col, Spin, Typography, Card, Table, Tag } from 'antd'
 import RevenueChart from '../../components/Charts/RevenueChart'
 import AdminUser from '../../components/AdminUser/AdminUser'
@@ -27,15 +27,19 @@ import { getStoredAccessToken } from '../../service/UserService'
 import AdminHeader from './AdminHeader';
 import ProfileAdmin from '../../components/ProfileAdmin/ProfileAdmin';
 import AdminVoucher from '../../components/AdminVoucher/AdminVoucher';
+import ReturnAdmin from '../../components/ReturnAdmin/ReturnAdmin';
+import ChatbotAdmin from '../../components/ChatbotAdmin/ChatbotAdmin';
 
 const { Title } = Typography
 
 export const AdminPage = () => {
   const items = [
+    getItem('AI Assistant', 'chatbot', <PieChartOutlined />),
     getItem('Tổng quan', '', <PieChartOutlined />),
     getItem('Người dùng', 'user', <UserOutlined />),
     getItem('Sản phẩm', 'product', <AppstoreOutlined />),
     getItem('Đơn hàng', 'order', <ShoppingCartOutlined />),
+    getItem('Đổi trả & hoàn tiền', 'returns', <SwapOutlined />),
     getItem('Mã giảm giá (Voucher)', 'voucher', <GiftOutlined />),
     getItem('Cập nhật tài khoản', 'profile', <SettingOutlined />),
   ]
@@ -117,6 +121,8 @@ export const AdminPage = () => {
           { text: 'Đang giao', value: 'shipping' },
           { text: 'Đã giao', value: 'delivered' },
           { text: 'Đã hủy', value: 'cancelled' },
+          { text: 'Hết hạn thanh toán', value: 'expired' },
+          { text: 'Cần kiểm tra thanh toán', value: 'payment_review' },
         ],
         onFilter: (value, record) => record.status === value,
         render: (status) => {
@@ -126,6 +132,8 @@ export const AdminPage = () => {
             shipping: { label: 'Đang giao', color: 'orange' },
             delivered: { label: 'Đã giao', color: 'green' },
             cancelled: { label: 'Đã hủy', color: 'red' },
+            expired: { label: 'Hết hạn thanh toán', color: 'volcano' },
+            payment_review: { label: 'Cần kiểm tra thanh toán', color: 'magenta' },
           }
       
           const { label, color } = statusMap[status] || { label: 'Không rõ', color: 'gray' }
@@ -291,9 +299,11 @@ export const AdminPage = () => {
     }
 
     switch (key) {
+      case 'chatbot': return <ChatbotAdmin />
       case 'user': return <AdminUser />
       case 'product': return <AdminProduct />
       case 'order': return <OrderAdmin />
+      case 'returns': return <ReturnAdmin />
       case 'voucher': return <AdminVoucher />
       case 'profile': return <ProfileAdmin />
       default: return <></>

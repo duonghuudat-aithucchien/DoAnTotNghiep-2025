@@ -23,6 +23,13 @@ import { useMutationHooks } from '../../hooks/useMutationHook';
 
 const { Option } = Select;
 
+const orderStatusLabels = {
+  pending: ['Chờ xác nhận', 'default'], confirmed: ['Đã xác nhận', 'blue'],
+  shipping: ['Đang giao', 'orange'], delivered: ['Đã giao', 'green'],
+  cancelled: ['Đã hủy', 'red'], expired: ['Hết hạn thanh toán', 'volcano'],
+  payment_review: ['Cần kiểm tra thanh toán', 'magenta'],
+};
+
 const MyOrderPage = () => {
   const location = useLocation();
   const { state } = location;
@@ -149,8 +156,8 @@ const MyOrderPage = () => {
                           </span>
                         </div>
                         <WrapperStatus>
-                          <Tag color={list?.isDelivered ? 'green' : 'volcano'}>
-                            {list?.isDelivered ? 'Đã giao hàng' : 'Chưa giao hàng'}
+                          <Tag color={orderStatusLabels[list?.status]?.[1] || 'default'}>
+                            {orderStatusLabels[list?.status]?.[0] || list?.status}
                           </Tag>
                           <Tag color={list?.isPaid ? 'green' : 'gold'}>
                             {list?.isPaid ? 'Đã thanh toán' : 'Chưa thanh toán'}
@@ -190,7 +197,7 @@ const MyOrderPage = () => {
                           </span>
                         </div>
                         <div className="actions" style={{ display: 'flex', gap: '12px' }}>
-                          {!list?.isDelivered && !list?.isPaid && (
+                          {['pending', 'confirmed'].includes(list?.status) && !list?.isPaid && (
                             <ButtonComponent
                               onClick={() => handleCancleOrder(list)}
                               size={40}

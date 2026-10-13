@@ -107,7 +107,8 @@
 // export default orderSlide.reducer
 
 import { createSlice } from '@reduxjs/toolkit'
-import { saveCartToLocal, getCartFromLocal } from '../../utils/localCart'
+import { saveCartToLocal, getCartFromLocal, clearGuestCart } from '../../utils/localCart'
+import { getCartItemId, mergeCarts, normalizeCartItem } from '../../utils/cart'
 
 const initialState = {
   orderItems: [],
@@ -133,26 +134,36 @@ export const orderSlide = createSlice({
     loadCartFromLocal: (state, action) => {
       const userId = action.payload
       state.user = userId
-      state.orderItems = getCartFromLocal(userId)
+      state.orderItems = getCartFromLocal(userId).map(normalizeCartItem)
+      state.orderItemsSelected = []
+    },
+
+    mergeGuestCart: (state, action) => {
+      const userId = action.payload
+      const merged = mergeCarts(getCartFromLocal(userId), getCartFromLocal(null))
+      state.user = userId
+      state.orderItems = merged
+      state.orderItemsSelected = []
+      saveCartToLocal(userId, merged)
+      clearGuestCart()
     },
 
     addOrderProduct: (state, action) => {
       const { orderItem } = action.payload
+      const normalizedItem = normalizeCartItem(orderItem)
       const itemOrder = state.orderItems.find(
-        (item) =>
-          item.product === orderItem.product &&
-          item.sizes === orderItem.sizes &&
-          item.colors === orderItem.colors
+        (item) => getCartItemId(item) === normalizedItem.cartItemId
       )
 
       if (itemOrder) {
-        if (itemOrder.amount <= itemOrder.countInStock) {
-          itemOrder.amount += orderItem.amount
+        if ((itemOrder.amount + normalizedItem.amount) <= itemOrder.countInStock) {
+          itemOrder.amount += normalizedItem.amount
           state.isSuccessOrder = true
           state.isErrorOrder = false
         }
       } else {
-        state.orderItems.push(orderItem)
+        state.orderItems.push(normalizedItem)
+        state.isSuccessOrder = true
       }
 
       saveCartToLocal(state.user, state.orderItems)
@@ -163,40 +174,44 @@ export const orderSlide = createSlice({
     },
 
     increaseAmount: (state, action) => {
-      const { idProduct } = action.payload
-      const itemOrder = state.orderItems.find((item) => item.product === idProduct)
-      const itemOrderSelected = state.orderItemsSelected.find((item) => item.product === idProduct)
-      itemOrder.amount++
-      if (itemOrderSelected) itemOrderSelected.amount++
+      const id = action.payload.cartItemId || action.payload.idProduct
+      const itemOrder = state.orderItems.find((item) => getCartItemId(item) === id)
+      const itemOrderSelected = state.orderItemsSelected.find((item) => getCartItemId(item) === id)
+      if (itemOrder && itemOrder.amount < itemOrder.countInStock) {
+        itemOrder.amount++
+        if (itemOrderSelected) itemOrderSelected.amount = itemOrder.amount
+      }
       saveCartToLocal(state.user, state.orderItems)
     },
 
     decreaseAmount: (state, action) => {
-      const { idProduct } = action.payload
-      const itemOrder = state.orderItems.find((item) => item.product === idProduct)
-      const itemOrderSelected = state.orderItemsSelected.find((item) => item.product === idProduct)
-      itemOrder.amount--
-      if (itemOrderSelected) itemOrderSelected.amount--
+      const id = action.payload.cartItemId || action.payload.idProduct
+      const itemOrder = state.orderItems.find((item) => getCartItemId(item) === id)
+      const itemOrderSelected = state.orderItemsSelected.find((item) => getCartItemId(item) === id)
+      if (itemOrder && itemOrder.amount > 1) {
+        itemOrder.amount--
+        if (itemOrderSelected) itemOrderSelected.amount = itemOrder.amount
+      }
       saveCartToLocal(state.user, state.orderItems)
     },
 
     removeOrderProduct: (state, action) => {
-      const { idProduct } = action.payload
-      state.orderItems = state.orderItems.filter((item) => item.product !== idProduct)
-      state.orderItemsSelected = state.orderItemsSelected.filter((item) => item.product !== idProduct)
+      const id = action.payload.cartItemId || action.payload.idProduct
+      state.orderItems = state.orderItems.filter((item) => getCartItemId(item) !== id)
+      state.orderItemsSelected = state.orderItemsSelected.filter((item) => getCartItemId(item) !== id)
       saveCartToLocal(state.user, state.orderItems)
     },
 
     removeAllOrderProduct: (state, action) => {
       const { listChecked } = action.payload
-      state.orderItems = state.orderItems.filter((item) => !listChecked.includes(item.product))
-      state.orderItemsSelected = state.orderItemsSelected.filter((item) => !listChecked.includes(item.product))
+      state.orderItems = state.orderItems.filter((item) => !listChecked.includes(getCartItemId(item)))
+      state.orderItemsSelected = state.orderItemsSelected.filter((item) => !listChecked.includes(getCartItemId(item)))
       saveCartToLocal(state.user, state.orderItems)
     },
 
     selectedOrder: (state, action) => {
       const { listChecked } = action.payload
-      state.orderItemsSelected = state.orderItems.filter((item) => listChecked.includes(item.product))
+      state.orderItemsSelected = state.orderItems.filter((item) => listChecked.includes(getCartItemId(item)))
     },
   },
 })
@@ -210,6 +225,7 @@ export const {
   selectedOrder,
   resetOrder,
   loadCartFromLocal,
+  mergeGuestCart,
 } = orderSlide.actions
 
 export default orderSlide.reducer

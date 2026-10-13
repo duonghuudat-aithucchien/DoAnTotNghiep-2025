@@ -8,7 +8,7 @@
 **FashionStyle** là hệ thống thương mại điện tử hoàn chỉnh gồm 3 thành phần chính:
 1. **Frontend (`my-frontend`)**: Giao diện người dùng và trang quản trị Admin xây dựng bằng **React 19**, **Ant Design**, **Redux Toolkit**, và **Styled-Components**.
 2. **Backend (`my-backend`)**: RESTful API server xây dựng bằng **Node.js / Express**, lưu trữ dữ liệu trên **MongoDB Atlas Cloud**, tích hợp **PayPal**, **Cloudinary**, và **Nodemailer**.
-3. **Chatbot AI (`chatbot`)**: Dịch vụ trợ lý ảo hỗ trợ tư vấn sản phẩm thông minh bằng **Python / Flask**, **Google Gemini AI**, và tìm kiếm ngữ nghĩa thời gian thực qua **FAISS & Sentence Transformers (BERT)**.
+3. **Chatbot AI (`chatbot`)**: Trợ lý mua sắm tiếng Việt dùng **Flask / Google GenAI**, **multilingual E5 + FAISS + BM25**, công cụ nghiệp vụ có xác thực, hội thoại nhiều lượt và SSE. Xem [hướng dẫn AI Assistant v2](chatbot/README.md) về kiến trúc, vận hành, đánh giá và trình bày trong CV.
 
 ---
 
@@ -114,7 +114,13 @@ Fashion_Style_Do_an_tot_nghiep/
     ├── .env.example                # Mẫu biến môi trường Chatbot
     ├── requirements.txt            # Thư viện Python cần thiết
     ├── app.py                      # Flask Server cung cấp API chatbot & RAG
-    ├── training.py                 # Huấn luyện mô hình phân loại intent
+    ├── training.py                 # Entry point tương thích cho evaluation, không train LLM
+    ├── domain/                     # Dữ liệu nghiệp vụ, lọc variant, privacy và ports
+    ├── application/                # Hội thoại, hiểu query, hybrid retrieval, tools
+    ├── infrastructure/             # GenAI, E5/FAISS, MongoDB, API cửa hàng
+    ├── api/                        # Validation, xác thực, rate limit, SSE
+    ├── evaluation/                 # Dataset tổng hợp và benchmark có thể tái lập
+    ├── tests/                      # Kiểm thử offline
     ├── intents.json                # Bộ câu hỏi & mẫu phản hồi mẫu
     ├── classes.pkl                 # Danh sách nhãn ý định
     ├── words.pkl                   # Từ điển từ vựng tiền xử lý
@@ -130,7 +136,7 @@ Fashion_Style_Do_an_tot_nghiep/
 |---|---|
 | **Frontend** | React 19, Redux Toolkit, React-Query, Ant Design 5, Styled-Components, Axios, Recharts |
 | **Backend** | Node.js, Express.js, MongoDB Atlas (Mongoose), JSON Web Token (JWT), Nodemailer, Cloudinary, PayPal SDK |
-| **AI Chatbot** | Python 3, Flask, Google Gemini AI (Generative AI), FAISS (Vector DB), Sentence-Transformers (BERT), NLTK, TensorFlow |
+| **AI Chatbot** | Python 3.11, Flask/Waitress, Google GenAI, multilingual E5, FAISS, BM25/RRF, Pydantic, PyMongo, pytest |
 
 ---
 
@@ -138,7 +144,7 @@ Fashion_Style_Do_an_tot_nghiep/
 
 ### Yêu cầu tiên quyết:
 - **Node.js** >= 18.x
-- **Python** >= 3.10
+- **Python** 3.11 (khuyến nghị)
 - **MongoDB Atlas** Account
 
 ---
@@ -227,10 +233,23 @@ REACT_APP_CHATBOT_URL=http://127.0.0.1:5000
 - `GET /api/order/get-all-order/:id`: Lấy toàn bộ đơn hàng của 1 user
 - `GET /api/order/get-details-order/:id`: Lấy chi tiết đơn hàng
 - `DELETE /api/order/cancel-order/:id`: Hủy đơn hàng
+- `PUT /api/order/update-status/:id`: Chuyển trạng thái và cập nhật mã vận đơn (Admin)
+- `PUT /api/order/tracking/:id`: Thêm mốc tracking tùy chỉnh (Admin)
+
+### 🔄 Return APIs (`/api/returns`)
+- `POST /api/returns/create`: Tạo yêu cầu đổi trả/hoàn tiền
+- `GET /api/returns/mine`: Lấy yêu cầu của người đang đăng nhập
+- `GET /api/returns`: Danh sách yêu cầu (Admin)
+- `PUT /api/returns/:id/status`: Duyệt, nhận hàng trả hoặc từ chối (Admin)
+- `POST /api/returns/:id/refund`: Hoàn tiền qua PayPal/VNPAY hoặc ghi nhận hoàn thủ công (Admin)
 
 ### 💳 Payment & Email APIs
 - `GET /api/payment/config`: Cung cấp PayPal Client ID cho client
+- `GET /api/payment/vnpay/ipn`: Webhook/IPN xác nhận giao dịch VNPAY
+- `POST /api/payment/paypal/webhook`: Webhook thanh toán và hoàn tiền PayPal
 - `POST /api/email/subscribe`: Đăng ký nhận tin tức khuyến mãi qua email
+
+Để webhook hoạt động ở môi trường thật, URL backend phải dùng HTTPS công khai. Tạo webhook PayPal, điền `PAYPAL_WEBHOOK_ID`; đăng ký IPN VNPAY trỏ tới `/api/payment/vnpay/ipn`. Các đơn online chưa thanh toán sẽ tự hết hạn theo `UNPAID_ORDER_TTL_MINUTES` và job chạy theo `ORDER_EXPIRY_JOB_INTERVAL_MS`.
 
 ### 📊 Dashboard & Filter APIs
 - `GET /api/dashboard/stats`: Thống kê doanh thu, số lượng đơn hàng, người dùng
@@ -249,7 +268,7 @@ npm test -- --watchAll=false --runInBand
 npm run build
 ```
 
-GitHub Actions tự động chạy kiểm thử backend, frontend, build production và kiểm tra cú pháp chatbot.
+GitHub Actions chạy kiểm thử backend/frontend, build production, pytest chatbot và benchmark hồi quy offline 114 câu. Các điểm benchmark trên dữ liệu tổng hợp không phải đánh giá chất lượng người dùng thực tế.
 
 ## 7. Chạy bằng Docker
 

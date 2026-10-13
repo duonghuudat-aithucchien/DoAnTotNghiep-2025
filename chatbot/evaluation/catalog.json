@@ -1,0 +1,474 @@
+[
+  {
+    "id": "shirt-black",
+    "name": "Áo sơ mi nam đen công sở",
+    "type": "áo sơ mi",
+    "description": "Nam công sở đi làm phỏng vấn cotton thoải mái",
+    "price": 400000,
+    "discount": 10,
+    "rating": 4.7,
+    "countInStock": 8,
+    "image": "",
+    "sizes": [
+      "M",
+      "L"
+    ],
+    "colors": [
+      "đen"
+    ],
+    "gender": "nam",
+    "occasion": "đi làm phỏng vấn",
+    "variants": [
+      {
+        "size": "M",
+        "color": "đen",
+        "price": 400000,
+        "stock": 5,
+        "isActive": true
+      },
+      {
+        "size": "L",
+        "color": "đen",
+        "price": 420000,
+        "stock": 3,
+        "isActive": true
+      }
+    ]
+  },
+  {
+    "id": "shirt-white",
+    "name": "Áo sơ mi nam trắng cotton",
+    "type": "áo sơ mi",
+    "description": "Nam trắng đi làm và đi học",
+    "price": 300000,
+    "discount": 0,
+    "rating": 4.5,
+    "countInStock": 7,
+    "image": "",
+    "sizes": [
+      "M",
+      "L"
+    ],
+    "colors": [
+      "trắng"
+    ],
+    "gender": "nam",
+    "variants": [
+      {
+        "size": "M",
+        "color": "trắng",
+        "price": 300000,
+        "stock": 7,
+        "isActive": true
+      },
+      {
+        "size": "L",
+        "color": "trắng",
+        "price": 300000,
+        "stock": 0,
+        "isActive": true
+      }
+    ]
+  },
+  {
+    "id": "shirt-women",
+    "name": "Áo sơ mi nữ be",
+    "type": "áo sơ mi",
+    "description": "Nữ be thanh lịch đi làm",
+    "price": 350000,
+    "discount": 0,
+    "rating": 4.8,
+    "countInStock": 6,
+    "image": "",
+    "sizes": [
+      "S",
+      "M"
+    ],
+    "colors": [
+      "be"
+    ],
+    "gender": "nữ",
+    "variants": [
+      {
+        "size": "S",
+        "color": "be",
+        "price": 350000,
+        "stock": 3,
+        "isActive": true
+      },
+      {
+        "size": "M",
+        "color": "be",
+        "price": 350000,
+        "stock": 3,
+        "isActive": true
+      }
+    ]
+  },
+  {
+    "id": "tee-black",
+    "name": "Áo thun nam đen basic",
+    "type": "áo thun",
+    "description": "Áo phông nam đen basic đi chơi cotton",
+    "price": 180000,
+    "discount": 0,
+    "rating": 4.3,
+    "countInStock": 9,
+    "image": "",
+    "sizes": [
+      "M",
+      "L",
+      "XL"
+    ],
+    "colors": [
+      "đen"
+    ],
+    "gender": "nam",
+    "variants": [
+      {
+        "size": "M",
+        "color": "đen",
+        "price": 180000,
+        "stock": 3,
+        "isActive": true
+      },
+      {
+        "size": "L",
+        "color": "đen",
+        "price": 180000,
+        "stock": 3,
+        "isActive": true
+      },
+      {
+        "size": "XL",
+        "color": "đen",
+        "price": 200000,
+        "stock": 3,
+        "isActive": true
+      }
+    ]
+  },
+  {
+    "id": "tee-white",
+    "name": "Áo thun nữ trắng",
+    "type": "áo thun",
+    "description": "Áo phông nữ trắng đi học basic cotton",
+    "price": 150000,
+    "discount": 0,
+    "rating": 4.3,
+    "countInStock": 6,
+    "image": "",
+    "sizes": [
+      "S",
+      "M"
+    ],
+    "colors": [
+      "trắng"
+    ],
+    "gender": "nữ",
+    "variants": [
+      {
+        "size": "S",
+        "color": "trắng",
+        "price": 150000,
+        "stock": 2,
+        "isActive": true
+      },
+      {
+        "size": "M",
+        "color": "trắng",
+        "price": 150000,
+        "stock": 4,
+        "isActive": true
+      }
+    ]
+  },
+  {
+    "id": "jeans-blue",
+    "name": "Quần jeans nam xanh",
+    "type": "quần jeans",
+    "description": "Denim nam xanh đi chơi năng động",
+    "price": 550000,
+    "discount": 10,
+    "rating": 4.6,
+    "countInStock": 5,
+    "image": "",
+    "sizes": [
+      "30",
+      "32"
+    ],
+    "colors": [
+      "xanh"
+    ],
+    "gender": "nam",
+    "variants": [
+      {
+        "size": "30",
+        "color": "xanh",
+        "price": 550000,
+        "stock": 3,
+        "isActive": true
+      },
+      {
+        "size": "32",
+        "color": "xanh",
+        "price": 570000,
+        "stock": 2,
+        "isActive": true
+      }
+    ]
+  },
+  {
+    "id": "trousers-black",
+    "name": "Quần tây nam đen",
+    "type": "quần tây",
+    "description": "Nam công sở đi làm phỏng vấn",
+    "price": 450000,
+    "discount": 0,
+    "rating": 4.5,
+    "countInStock": 6,
+    "image": "",
+    "sizes": [
+      "30",
+      "32"
+    ],
+    "colors": [
+      "đen"
+    ],
+    "gender": "nam",
+    "variants": [
+      {
+        "size": "30",
+        "color": "đen",
+        "price": 450000,
+        "stock": 3,
+        "isActive": true
+      },
+      {
+        "size": "32",
+        "color": "đen",
+        "price": 450000,
+        "stock": 3,
+        "isActive": true
+      }
+    ]
+  },
+  {
+    "id": "short-be",
+    "name": "Quần short nam be",
+    "type": "quần short",
+    "description": "Nam be đi chơi thể thao thoải mái",
+    "price": 250000,
+    "discount": 0,
+    "rating": 4.2,
+    "countInStock": 7,
+    "image": "",
+    "sizes": [
+      "M",
+      "L"
+    ],
+    "colors": [
+      "be"
+    ],
+    "gender": "nam",
+    "variants": [
+      {
+        "size": "M",
+        "color": "be",
+        "price": 250000,
+        "stock": 4,
+        "isActive": true
+      },
+      {
+        "size": "L",
+        "color": "be",
+        "price": 270000,
+        "stock": 3,
+        "isActive": true
+      }
+    ]
+  },
+  {
+    "id": "hoodie-gray",
+    "name": "Hoodie nam xám",
+    "type": "hoodie",
+    "description": "Nam xám giữ ấm đi học mùa lạnh",
+    "price": 480000,
+    "discount": 0,
+    "rating": 4.4,
+    "countInStock": 8,
+    "image": "",
+    "sizes": [
+      "M",
+      "L"
+    ],
+    "colors": [
+      "xám"
+    ],
+    "gender": "nam",
+    "variants": [
+      {
+        "size": "M",
+        "color": "xám",
+        "price": 480000,
+        "stock": 4,
+        "isActive": true
+      },
+      {
+        "size": "L",
+        "color": "xám",
+        "price": 480000,
+        "stock": 4,
+        "isActive": true
+      }
+    ]
+  },
+  {
+    "id": "dress-red",
+    "name": "Váy nữ đỏ dự tiệc",
+    "type": "váy",
+    "description": "Nữ đỏ thanh lịch dự tiệc hẹn hò",
+    "price": 800000,
+    "discount": 0,
+    "rating": 4.8,
+    "countInStock": 4,
+    "image": "",
+    "sizes": [
+      "S",
+      "M"
+    ],
+    "colors": [
+      "đỏ"
+    ],
+    "gender": "nữ",
+    "variants": [
+      {
+        "size": "S",
+        "color": "đỏ",
+        "price": 800000,
+        "stock": 2,
+        "isActive": true
+      },
+      {
+        "size": "M",
+        "color": "đỏ",
+        "price": 800000,
+        "stock": 2,
+        "isActive": true
+      }
+    ]
+  },
+  {
+    "id": "jacket-black",
+    "name": "Áo khoác nam đen",
+    "type": "áo khoác",
+    "description": "Nam đen mùa lạnh đi làm",
+    "price": 700000,
+    "discount": 0,
+    "rating": 4.6,
+    "countInStock": 4,
+    "image": "",
+    "sizes": [
+      "M",
+      "L"
+    ],
+    "colors": [
+      "đen"
+    ],
+    "gender": "nam",
+    "variants": [
+      {
+        "size": "M",
+        "color": "đen",
+        "price": 700000,
+        "stock": 2,
+        "isActive": true
+      },
+      {
+        "size": "L",
+        "color": "đen",
+        "price": 700000,
+        "stock": 2,
+        "isActive": true
+      }
+    ]
+  },
+  {
+    "id": "shoes-white",
+    "name": "Giày trắng sneaker",
+    "type": "giày",
+    "description": "Sneaker trắng nam nữ đi chơi thể thao",
+    "price": 650000,
+    "discount": 0,
+    "rating": 4.5,
+    "countInStock": 5,
+    "image": "",
+    "sizes": [
+      "38",
+      "40"
+    ],
+    "colors": [
+      "trắng"
+    ],
+    "variants": [
+      {
+        "size": "38",
+        "color": "trắng",
+        "price": 650000,
+        "stock": 2,
+        "isActive": true
+      },
+      {
+        "size": "40",
+        "color": "trắng",
+        "price": 650000,
+        "stock": 3,
+        "isActive": true
+      }
+    ]
+  },
+  {
+    "id": "sold-out",
+    "name": "Áo sơ mi nam đen hết hàng",
+    "type": "áo sơ mi",
+    "description": "Áo sơ mi hết hàng",
+    "price": 100000,
+    "discount": 0,
+    "rating": 5,
+    "countInStock": 0,
+    "image": "",
+    "sizes": [
+      "L"
+    ],
+    "colors": [
+      "đen"
+    ],
+    "variants": [
+      {
+        "size": "L",
+        "color": "đen",
+        "price": 100000,
+        "stock": 0,
+        "isActive": true
+      }
+    ]
+  },
+  {
+    "id": "inactive",
+    "name": "Áo thun nam đen ngừng bán",
+    "type": "áo thun",
+    "description": "Ngừng bán",
+    "price": 10000,
+    "discount": 0,
+    "rating": 5,
+    "countInStock": 99,
+    "isActive": false,
+    "image": "",
+    "sizes": [
+      "L"
+    ],
+    "colors": [
+      "đen"
+    ]
+  }
+]

@@ -21,6 +21,7 @@ import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import * as UserService from '../../service/UserService';
 import { resetUser } from '../../redux/slides/userSlide';
+import { loadCartFromLocal } from '../../redux/slides/orderSlide';
 import Loading from '../../components/LoadingComponent/Loading';
 import { searchProduct } from '../../redux/slides/productSlide';
 import TypeProduct from '../TypeProduct/TypeProduct';
@@ -52,6 +53,7 @@ const HeaderComponent = () => {
     setLoading(true);
     await UserService.logoutUser();
     dispatch(resetUser());
+    dispatch(loadCartFromLocal(null));
     setLoading(false);
   };
 

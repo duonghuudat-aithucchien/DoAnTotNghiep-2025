@@ -18,6 +18,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import StepComponent from '../../components/StepComponent/StepComponent';
 import { addNotification } from '../../redux/slides/notificationSlice';
 import { resetOrder } from '../../redux/slides/orderSlide';
+import { getCartItemId } from '../../utils/cart';
 
 const OrderPage = () => {
   const order = useSelector((state) => state.order)
@@ -59,14 +60,14 @@ const OrderPage = () => {
     }
   }
   
-  const handleChangeCount = (type, idProduct, limited) => {
+  const handleChangeCount = (type, cartItemId, limited) => {
     if(type === 'increase') {
       if(!limited) {
-        dispatch(increaseAmount({idProduct}))
+        dispatch(increaseAmount({cartItemId}))
       }
     } else {
       if(!limited) {
-        dispatch(decreaseAmount({idProduct}))
+        dispatch(decreaseAmount({cartItemId}))
       }
     }
   }
@@ -75,7 +76,7 @@ const OrderPage = () => {
     if(e.target.checked) {
       const newListChecked = []
       order?.orderItems?.forEach((item) => {
-        newListChecked.push(item?.product)
+        newListChecked.push(getCartItemId(item))
       })
       setListChecked(newListChecked)
     } else {
@@ -144,8 +145,8 @@ const OrderPage = () => {
     }
   }
 
-  const handleDeleteOrder = (idProduct) => {
-    dispatch(removeOrderProduct({idProduct}))
+  const handleDeleteOrder = (cartItemId) => {
+    dispatch(removeOrderProduct({cartItemId}))
     
   }
 
@@ -301,13 +302,15 @@ const OrderPage = () => {
               </WrapperStyleHeader>
   
               <WrapperListOrder>
-                {order?.orderItems?.map((order) => (
-                  <WrapperItemOrder key={order?.product}>
+                {order?.orderItems?.map((order) => {
+                  const cartItemId = getCartItemId(order);
+                  return (
+                  <WrapperItemOrder key={cartItemId}>
                     <div className="left">
                       <Checkbox 
                         onChange={onChange} 
-                        value={order?.product} 
-                        checked={listChecked.includes(order?.product)} 
+                        value={cartItemId}
+                        checked={listChecked.includes(cartItemId)}
                       />
                       <img 
                         src={order?.image} 
@@ -315,6 +318,9 @@ const OrderPage = () => {
                       />
                       <div className="product-name" onClick={() => handleRedirectProductDetail(order?.product)}>
                         {order?.name}
+                        <div style={{ fontSize: 12, color: '#777', marginTop: 4 }}>
+                          {order?.size || order?.sizes} / {order?.color || order?.colors}{order?.sku ? ` · ${order.sku}` : ''}
+                        </div>
                       </div>
                     </div>
   
@@ -322,7 +328,7 @@ const OrderPage = () => {
                       <span className="price">{convertPrice(order?.price)}</span>
   
                       <WrapperCountOrder>
-                        <button onClick={() => handleChangeCount('decrease', order?.product, order?.amount === 1)}>
+                        <button onClick={() => handleChangeCount('decrease', cartItemId, order?.amount === 1)}>
                           <MinusOutlined style={{ fontSize: 10 }} />
                         </button>
                         <WrapperInputNumber
@@ -331,7 +337,7 @@ const OrderPage = () => {
                           min={1}
                           max={order?.countInStock}
                         />
-                        <button onClick={() => handleChangeCount('increase', order?.product, order?.amount === order?.countInStock)}>
+                        <button onClick={() => handleChangeCount('increase', cartItemId, order?.amount === order?.countInStock)}>
                           <PlusOutlined style={{ fontSize: 10 }} />
                         </button>
                       </WrapperCountOrder>
@@ -342,11 +348,11 @@ const OrderPage = () => {
   
                       <DeleteOutlined 
                         className="delete" 
-                        onClick={() => handleDeleteOrder(order?.product)} 
+                        onClick={() => handleDeleteOrder(cartItemId)}
                       />
                     </div>
                   </WrapperItemOrder>
-                ))}
+                )})}
               </WrapperListOrder>
             </WrapperLeft>
           </div>

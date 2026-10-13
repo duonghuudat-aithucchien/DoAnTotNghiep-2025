@@ -11,6 +11,7 @@ import Loading from './components/LoadingComponent/Loading'
 import ChatbotWidget from "./components/Chatbot/ChatbotWidget";
 import Footer from './components/FooterComponent/FooterComponent'
 import { Navigate } from 'react-router-dom';
+import { loadCartFromLocal } from './redux/slides/orderSlide';
 
 // import axios from 'axios';
 // import { useQuery } from '@tanstack/react-query';
@@ -81,13 +82,15 @@ function App() {
   useEffect(() => {
   const { storageData, decoded } = handleDecoded();
   if (decoded?.id) {
+    dispatch(loadCartFromLocal(decoded.id));
     handleGetDetailsUser(decoded.id, storageData).finally(() => {
       setIsReady(true); // ✅ sau khi get xong thì cho phép render routes
     });
   } else {
+    dispatch(loadCartFromLocal(null));
     setIsReady(true); // ✅ vẫn render nếu không có token
   }
-}, [handleDecoded, handleGetDetailsUser]);
+}, [handleDecoded, handleGetDetailsUser, dispatch]);
 
   
 

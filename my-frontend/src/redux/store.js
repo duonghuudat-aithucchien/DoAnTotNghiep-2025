@@ -17,9 +17,9 @@ import storage from 'redux-persist/lib/storage';
 
 const persistConfig = {
   key: 'root',
-  version: 1,
+  version: 2,
   storage,
-  blacklist: ['product', 'user'] //ko luu vao localstorage
+  blacklist: ['product', 'user', 'order'] // cart is persisted per user/guest by localCart
 };
 
 const rootReducer = combineReducers({

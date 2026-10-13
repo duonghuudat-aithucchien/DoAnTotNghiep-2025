@@ -2,4 +2,9 @@
 __pycache__/
 *.pyc
 .venv/
+.runtime/
+.cache/
+.pytest_cache/
+tests/
+evaluation/reports/
 venv/

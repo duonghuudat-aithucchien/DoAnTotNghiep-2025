@@ -8,6 +8,7 @@ const path = require('path');
 const fs = require('fs');
 const connectDB = require('./config/db');
 const { notFound, errorHandler } = require('./middleware/errorMiddleware');
+const { startOrderExpirationJob } = require('./jobs/expireOrders');
 
 dotenv.config();
 
@@ -37,10 +38,12 @@ app.use(bodyParser.json({ limit: "2mb" }));
 app.use(bodyParser.urlencoded({ limit: "2mb", extended: true }));
 app.use(cookieParser());
 
-app.get('/api/health', (req, res) => res.status(200).json({ status: 'OK' }));
+app.get('/api/health', (req, res) => res.status(200).json({ status: 'OK', message: 'Service is healthy' }));
 
 // Connect Database
-connectDB();
+connectDB()
+  .then(() => startOrderExpirationJob())
+  .catch(() => console.error('Không khởi động job hết hạn đơn vì chưa kết nối được MongoDB'));
 
 // API Routes
 routes(app);

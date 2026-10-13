@@ -1,0 +1,5 @@
+# Install the CPU PyTorch wheel first when GPU inference is not needed.
+sentence-transformers==6.1.0
+faiss-cpu==1.15.1
+numpy==2.4.6
+

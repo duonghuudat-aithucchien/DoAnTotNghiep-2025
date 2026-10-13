@@ -44,19 +44,33 @@ const SignUpPage = () => {
   },[navigate]);
 
   const handleSignUp = () => {
-    mutation.mutate({email, password, confirmPassword})
-  }
-  console.log('sign-up', email, password, confirmPassword)
-  
-  const { data, isPending, isSuccess, isError } = mutation
-  useEffect(() => {
-    if (isSuccess) {
-      message.success(); 
-      handleNavigateSignIn();
-    } else if (isError) {
-      message.error();
+    const normalizedEmail = email.trim().toLowerCase()
+    if (!/^\S+@\S+\.\S+$/.test(normalizedEmail)) {
+      message.warning('Email không hợp lệ')
+      return
     }
-  }, [isSuccess, data, isError, handleNavigateSignIn]); 
+    if (password.length < 8) {
+      message.warning('Mật khẩu phải có ít nhất 8 ký tự')
+      return
+    }
+    if (password !== confirmPassword) {
+      message.warning('Mật khẩu xác nhận không khớp')
+      return
+    }
+    mutation.mutate({email: normalizedEmail, password, confirmPassword})
+  }
+  
+  const { data, isPending, isSuccess, isError, error } = mutation
+  useEffect(() => {
+    if (isSuccess && data?.status === 'OK') {
+      message.success('Đăng ký thành công')
+      handleNavigateSignIn()
+    } else if (isSuccess && data?.status === 'ERR') {
+      message.error(data?.message || 'Đăng ký thất bại')
+    } else if (isError) {
+      message.error(error?.response?.data?.message || 'Không thể kết nối đến máy chủ')
+    }
+  }, [isSuccess, data, isError, error, handleNavigateSignIn]);
   //console.log(data)
   //console.log('mutation', mutation)
 

@@ -1,68 +1,31 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="vi">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chatbot</title>
-    <link rel="stylesheet" href="static/style.css">
-</head>
-<body>
-    <div class="chat-container">
-        <h2>🤖 Tiểu Màn Thầu - Chatbot</h2>
-        <div id="chatbox"></div>
-        <div class="input-container">
-            <input type="text" id="userInput" placeholder="Nhập tin nhắn..." onkeypress="handleKeyPress(event)">
-            <button onclick="sendMessage()">🚀 Gửi</button>
-        </div>
-    </div>
-
-    <script>
-        function sendMessage() {
-            let userText = document.getElementById("userInput").value;
-            if (userText.trim() === "") return;
-
-            let chatbox = document.getElementById("chatbox");
-
-            // Thêm tin nhắn người dùng với avatar
-            chatbox.innerHTML += `
-                <div class="message user-message">
-                    <span>${userText}</span>
-                    <img src="/static/khach.jpg" class="avatar">
-                </div>`;
-
-            document.getElementById("userInput").value = "";
-
-            // Hiển thị trạng thái "Đang trả lời..."
-            chatbox.innerHTML += `
-                <div class="message bot-message typing">
-                    <img src="/static/bot.jpg" class="avatar">
-                    <span class="typing-indicator"><span></span><span></span><span></span></span>
-                </div>`;
-
-            chatbox.scrollTop = chatbox.scrollHeight;
-
-            fetch("/get", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ message: userText })
-            })
-            .then(response => response.json())
-            .then(data => {
-                document.querySelector(".typing").remove(); // Xóa hiệu ứng typing
-                chatbox.innerHTML += `
-                    <div class="message bot-message">
-                        <img src="/static/bot.jpg" class="avatar">
-                        <span>${data.response}</span>
-                    </div>`;
-                chatbox.scrollTop = chatbox.scrollHeight;
-            });
-        }
-
-        function handleKeyPress(event) {
-            if (event.key === "Enter") {
-                sendMessage();
-            }
-        }
-    </script>
-</body>
-</html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>FashionStyle Assistant · Demo</title>
+<style>body{font:16px system-ui;background:#f4f5ff;color:#243041;margin:0}main{max-width:760px;margin:40px auto;padding:24px;background:white;border-radius:18px}header{display:flex;align-items:center;justify-content:space-between}h1{font-size:24px;color:#4338ca}p{line-height:1.6}#messages{height:55vh;overflow:auto;border-block:1px solid #e2e8f0;padding:12px 0}.bubble{padding:12px;margin:10px 0;background:#f1f5f9;border-radius:10px;white-space:pre-wrap;overflow-wrap:anywhere}.user{background:#e0e7ff}form{display:flex;gap:8px;margin-top:16px}input{flex:1;min-width:0;padding:12px;border:1px solid #cbd5e1;border-radius:8px}button{cursor:pointer;padding:10px;border:0;border-radius:8px;background:#4338ca;color:white}button:disabled{opacity:.5;cursor:wait}a{display:block;padding:8px;color:#4338ca}small{color:#64748b}#error{color:#b91c1c}@media(max-width:600px){main{margin:10px;padding:15px}}</style></head>
+<body><main><header><h1>✦ FashionStyle Assistant</h1><button id="reset">Cuộc trò chuyện mới</button></header><p>Demo công khai: tìm sản phẩm, kiểm tra size/màu, hỏi chính sách. Đăng nhập trên website để kiểm tra đơn hàng.</p><div id="messages" role="log" aria-live="polite"></div><p id="error" role="alert"></p><form id="form"><input id="input" aria-label="Tin nhắn" maxlength="2000" placeholder="Áo sơ mi đen size L dưới 500k" required><button id="send">Gửi</button></form><p><small>Không gửi mật khẩu hoặc thông tin nhạy cảm. Giá và tồn kho được kiểm tra khi đặt hàng.</small></p></main>
+<script>
+const messages = document.getElementById('messages'), input = document.getElementById('input');
+let conversation = sessionStorage.getItem('fashionDemoConversation'), busy = false;
+let session = localStorage.getItem('fashionDemoSession');
+if (!session) { session = crypto.randomUUID(); localStorage.setItem('fashionDemoSession', session); }
+function bubble(text, sender) { const node = document.createElement('div'); node.className = 'bubble ' + sender; node.textContent = text; messages.append(node); messages.scrollTop = messages.scrollHeight; return node; }
+document.getElementById('reset').onclick = () => { if (!busy) { conversation = null; sessionStorage.removeItem('fashionDemoConversation'); messages.replaceChildren(); } };
+document.getElementById('form').onsubmit = async (event) => {
+  event.preventDefault(); if (busy || !input.value.trim()) return;
+  busy = true; document.getElementById('send').disabled = true;
+  document.getElementById('error').textContent = '';
+  const message = input.value.trim(); input.value = ''; bubble(message, 'user');
+  const reply = bubble('Đang kiểm tra…', 'bot');
+  try {
+    const response = await fetch('/api/chat', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Chat-Session': session }, body: JSON.stringify({ message, conversation_id: conversation }) });
+    const data = await response.json(); if (!response.ok) throw new Error(data.message || 'Dịch vụ chưa sẵn sàng.');
+    conversation = data.conversation_id; sessionStorage.setItem('fashionDemoConversation', conversation); reply.textContent = data.response;
+    (data.products || []).forEach((product) => {
+      const link = document.createElement('a'); const url = new URL(product.link, location.origin);
+      if (!['http:', 'https:'].includes(url.protocol)) return;
+      link.href = url.href; link.textContent = product.name + ' · ' + Number(product.salePrice).toLocaleString('vi-VN') + ' ₫ · Size: ' + product.sizes.join(', '); reply.append(link);
+    });
+  } catch (error) { reply.textContent = 'Chưa hoàn tất câu trả lời.'; document.getElementById('error').textContent = error.message; input.value = message; }
+  finally { busy = false; document.getElementById('send').disabled = false; input.focus(); }
+};
+</script></body></html>

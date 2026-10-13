@@ -1,0 +1,343 @@
+.fashion-chat{
+  font-family:inherit;
+  color:#243041;
+  font-size:14px
+}
+
+.fashion-chat button{
+  font:inherit;
+  cursor:pointer;
+  border:0
+}
+
+.fashion-chat button:disabled{
+  cursor:not-allowed;
+  opacity:.5
+}
+
+.fashion-chat button:focus-visible,.fashion-chat a:focus-visible,.fashion-chat input:focus-visible{
+  outline:3px solid #a78bfa;
+  outline-offset:2px
+}
+
+.fashion-chat-launcher{
+  position:fixed;
+  bottom:24px;
+  right:24px;
+  width:56px;
+  height:56px;
+  border-radius:50%;
+  color:white;
+  background:#4338ca;
+  font-size:28px!important;
+  box-shadow:0 5px 24px #4338ca44;
+  z-index:9998
+}
+
+.fashion-chat-panel{
+  position:fixed;
+  bottom:92px;
+  right:24px;
+  width:420px;
+  height:min(690px,calc(100dvh - 110px));
+  display:flex;
+  flex-direction:column;
+  background:#fff;
+  border-radius:18px;
+  border:1px solid #e2e8f0;
+  box-shadow:0 16px 60px #18204233;
+  overflow:hidden;
+  z-index:9999
+}
+
+.fashion-chat-panel header{
+  padding:18px;
+  background:#312e81;
+  color:#fff;
+  display:flex;
+  justify-content:space-between;
+  align-items:center
+}
+
+.fashion-chat-panel header strong{
+  font-size:17px
+}
+
+.fashion-chat-panel header small{
+  display:block;
+  color:#ddd6fe;
+  margin-top:4px
+}
+
+.fashion-chat-panel header button{
+  color:white;
+  background:transparent;
+  font-size:25px
+}
+
+.fashion-chat-panel nav{
+  display:flex;
+  gap:8px;
+  padding:10px 12px;
+  border-bottom:1px solid #eef2f7
+}
+
+.fashion-chat-panel nav button,.fashion-chat-suggestions button{
+  background:#f1f0ff;
+  color:#4338ca;
+  border-radius:8px;
+  padding:7px 10px;
+  font-size:12px
+}
+
+.fashion-chat-messages{
+  flex:1;
+  overflow:auto;
+  overscroll-behavior:contain;
+  padding:16px;
+  background:#fafbff
+}
+
+.fashion-chat-welcome{
+  padding:22px 12px;
+  text-align:center
+}
+
+.fashion-chat-welcome>span{
+  font-size:38px;
+  color:#6366f1
+}
+
+.fashion-chat-welcome h3{
+  margin:12px 0;
+  font-size:20px
+}
+
+.fashion-chat-welcome p{
+  line-height:1.6;
+  color:#64748b
+}
+
+.fashion-chat-message{
+  margin-bottom:20px;
+  overflow-wrap:anywhere
+}
+
+.fashion-chat-message.user{
+  display:flex;
+  justify-content:flex-end
+}
+
+.fashion-chat-bubble{
+  white-space:pre-wrap;
+  border:1px solid #e2e8f0;
+  background:white;
+  border-radius:14px;
+  padding:11px 14px;
+  line-height:1.6;
+  max-width:100%
+}
+
+.fashion-chat-message.user .fashion-chat-bubble{
+  max-width:85%;
+  background:#4338ca;
+  color:white;
+  border:0
+}
+
+.fashion-chat-filters{
+  display:flex;
+  gap:5px;
+  flex-wrap:wrap;
+  margin-top:8px
+}
+
+.fashion-chat-filters span{
+  font-size:11px;
+  border-radius:5px;
+  background:#e8eaff;
+  color:#3730a3;
+  padding:4px 6px
+}
+
+.fashion-chat-products{
+  display:grid;
+  gap:9px;
+  margin-top:10px
+}
+
+.fashion-chat-product{
+  display:flex;
+  gap:12px;
+  background:white;
+  border:1px solid #e2e8f0;
+  border-radius:10px;
+  padding:10px;
+  text-decoration:none;
+  color:inherit
+}
+
+.fashion-chat-product img{
+  width:72px;
+  height:94px;
+  object-fit:cover;
+  border-radius:7px
+}
+
+.fashion-chat-product div{
+  min-width:0;
+  flex:1
+}
+
+.fashion-chat-product strong,.fashion-chat-product small{
+  display:block
+}
+
+.fashion-chat-product b{
+  display:inline-block;
+  color:#4338ca;
+  margin:5px 7px 4px 0
+}
+
+.fashion-chat-product del,.fashion-chat-product small{
+  color:#64748b;
+  font-size:11px
+}
+
+.fashion-chat-product span{
+  display:block;
+  margin-top:6px;
+  color:#4338ca;
+  font-size:12px
+}
+
+.fashion-chat-sources{
+  margin-top:8px;
+  font-size:11px;
+  color:#64748b;
+  display:flex;
+  gap:5px;
+  flex-wrap:wrap
+}
+
+.fashion-chat-sources a{
+  color:#4f46e5
+}
+
+.fashion-chat-feedback{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  margin-top:8px;
+  color:#64748b;
+  font-size:11px
+}
+
+.fashion-chat-feedback button{
+  padding:4px;
+  background:transparent;
+  border-radius:5px
+}
+
+.fashion-chat-feedback button[aria-pressed=true]{
+  background:#e0e7ff
+}
+
+.fashion-chat-status{
+  font-size:12px;
+  color:#6366f1
+}
+
+.fashion-chat-error{
+  padding:10px 12px;
+  color:#991b1b;
+  background:#fff1f2;
+  font-size:12px
+}
+
+.fashion-chat-error button{
+  background:transparent;
+  color:#4338ca;
+  text-decoration:underline
+}
+
+.fashion-chat-suggestions{
+  display:flex;
+  gap:6px;
+  padding:8px 12px;
+  overflow-x:auto;
+  flex-shrink:0
+}
+
+.fashion-chat-suggestions button{
+  white-space:nowrap
+}
+
+.fashion-chat-panel form{
+  display:flex;
+  gap:8px;
+  padding:12px;
+  border-top:1px solid #eef2f7
+}
+
+.fashion-chat-panel input{
+  flex:1;
+  min-width:0;
+  border:1px solid #cbd5e1;
+  border-radius:9px;
+  padding:11px;
+  font:inherit;
+  font-size:12px
+}
+
+.fashion-chat-panel form button{
+  border-radius:9px;
+  padding:8px 12px;
+  color:white;
+  background:#4338ca
+}
+
+.fashion-chat-panel footer{
+  font-size:10px;
+  padding:0 12px 10px;
+  color:#64748b;
+  line-height:1.5
+}
+
+.fashion-chat-history{
+  display:flex;
+  gap:8px;
+  margin-top:10px
+}
+
+.fashion-chat-history button{
+  padding:10px;
+  border-radius:8px;
+  background:#eef2ff;
+  text-align:left
+}
+
+.fashion-chat-history button:first-child{
+  flex:1
+}
+
+.fashion-chat-history small{
+  display:block;
+  font-size:11px;
+  color:#64748b;
+  margin-top:5px
+}
+
+@media(max-width:480px){
+  .fashion-chat-panel{
+    right:8px;
+    bottom:78px;
+    width:calc(100vw - 16px);
+    height:calc(100dvh - 94px)
+  }
+  .fashion-chat-launcher{
+    right:16px;
+    bottom:14px
+  }
+}
+

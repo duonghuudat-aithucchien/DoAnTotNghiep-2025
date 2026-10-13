@@ -8,7 +8,10 @@ const userSchema = new mongoose.Schema (
         phone: {type: String },
         address: {type: String, trim: true, maxlength: 300},
         avatar: {type: String},
-        city: {type: String, trim: true, maxlength: 100}
+        city: {type: String, trim: true, maxlength: 100},
+        passwordResetToken: { type: String, select: false },
+        passwordResetExpires: { type: Date, select: false },
+        passwordChangedAt: { type: Date, select: false }
     },
     {
         timestamps: true

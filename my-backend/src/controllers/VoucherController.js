@@ -1,102 +1,41 @@
 const VoucherService = require('../services/VoucherService');
+const { sendError, sendServiceResult } = require('../utils/httpResponse');
+
+const serverError = (res) => sendError(res, 'Lỗi máy chủ. Vui lòng thử lại sau.', 500);
 
 const createVoucher = async (req, res) => {
   try {
     const { code, name, discountValue, endDate } = req.body;
-    if (!code || !name || discountValue === undefined || !endDate) {
-      return res.status(200).json({
-        status: 'ERR',
-        message: 'Vui lòng điền đầy đủ các thông tin bắt buộc (mã, tên, giá trị giảm, hạn sử dụng)',
-      });
-    }
-
-    const response = await VoucherService.createVoucher(req.body);
-    return res.status(200).json(response);
-  } catch (e) {
-    return res.status(404).json({
-      message: e.message || e,
-    });
-  }
+    if (!code || !name || discountValue === undefined || !endDate) return sendError(res, 'Thông tin voucher chưa đầy đủ', 400);
+    return sendServiceResult(res, await VoucherService.createVoucher(req.body), { successStatus: 201, errorStatus: 409 });
+  } catch { return serverError(res); }
 };
 
 const updateVoucher = async (req, res) => {
-  try {
-    const voucherId = req.params.id;
-    if (!voucherId) {
-      return res.status(200).json({
-        status: 'ERR',
-        message: 'Thiếu voucherId',
-      });
-    }
-
-    const response = await VoucherService.updateVoucher(voucherId, req.body);
-    return res.status(200).json(response);
-  } catch (e) {
-    return res.status(404).json({
-      message: e.message || e,
-    });
-  }
+  try { return sendServiceResult(res, await VoucherService.updateVoucher(req.params.id, req.body), { errorStatus: 404 }); }
+  catch { return serverError(res); }
 };
 
 const deleteVoucher = async (req, res) => {
-  try {
-    const voucherId = req.params.id;
-    if (!voucherId) {
-      return res.status(200).json({
-        status: 'ERR',
-        message: 'Thiếu voucherId',
-      });
-    }
-
-    const response = await VoucherService.deleteVoucher(voucherId);
-    return res.status(200).json(response);
-  } catch (e) {
-    return res.status(404).json({
-      message: e.message || e,
-    });
-  }
+  try { return sendServiceResult(res, await VoucherService.deleteVoucher(req.params.id), { errorStatus: 404 }); }
+  catch { return serverError(res); }
 };
 
 const getAllVouchers = async (req, res) => {
-  try {
-    const { limit, page, sort } = req.query;
-    const response = await VoucherService.getAllVouchers(limit, page, sort);
-    return res.status(200).json(response);
-  } catch (e) {
-    return res.status(404).json({
-      message: e.message || e,
-    });
-  }
+  try { return sendServiceResult(res, await VoucherService.getAllVouchers(req.query.limit, req.query.page, req.query.sort)); }
+  catch { return serverError(res); }
 };
 
 const getAvailableVouchers = async (req, res) => {
-  try {
-    const response = await VoucherService.getAvailableVouchers();
-    return res.status(200).json(response);
-  } catch (e) {
-    return res.status(404).json({
-      message: e.message || e,
-    });
-  }
+  try { return sendServiceResult(res, await VoucherService.getAvailableVouchers()); }
+  catch { return serverError(res); }
 };
 
 const applyVoucher = async (req, res) => {
   try {
-    const { code, itemsPrice } = req.body;
-    const response = await VoucherService.applyVoucher(code, itemsPrice);
-    return res.status(200).json(response);
-  } catch (e) {
-    return res.status(404).json({
-      message: e.message || e,
-    });
-  }
+    if (!req.body.code) return sendError(res, 'Vui lòng nhập mã voucher', 400);
+    return sendServiceResult(res, await VoucherService.applyVoucher(req.body.code, req.body.itemsPrice));
+  } catch { return serverError(res); }
 };
 
-module.exports = {
-  createVoucher,
-  updateVoucher,
-  deleteVoucher,
-  getAllVouchers,
-  getAvailableVouchers,
-  applyVoucher,
-};
+module.exports = { createVoucher, updateVoucher, deleteVoucher, getAllVouchers, getAvailableVouchers, applyVoucher };

@@ -2,6 +2,7 @@ const Product = require("../models/ProductModel")
 const bcrypt = require("bcrypt")
 const mongoose = require('mongoose');
 const Order = require('../models/OrderProduct');
+const { normalizeVariants, totalVariantStock } = require('../utils/productVariants');
 
 // const createProduct = (newProduct) => {
 //     return new Promise(async (resolve, reject) => {
@@ -51,23 +52,25 @@ const createProduct = (newProduct) => {
             const checkProduct = await Product.findOne({ name })
             if (checkProduct !== null) {
                 return resolve({
-                    status: 'OK',
+                    status: 'ERR',
                     message: 'The name of product is already'
                 })
             }
 
+            const variants = normalizeVariants(newProduct.variants, price)
             const createdProduct = await Product.create({
                 name,
                 image,
                 subImages: subImages || [],
                 type,
                 price,
-                countInStock: Number(countInStock),
+                countInStock: variants.length ? totalVariantStock(variants) : Number(countInStock),
                 rating,
                 description,
                 discount: Number(discount),
                 sizes,
-                colors
+                colors,
+                variants
             })
 
             resolve({
@@ -90,13 +93,20 @@ const updateProduct = (id, data) => {
                 _id: id
             })
             if(checkProduct === null) {
-                resolve({
-                    status: 'OK',
+                return resolve({
+                    status: 'ERR',
                     message: 'The product is not defined'
                 })
             }
 
-            const updateProduct = await Product.findByIdAndUpdate(id, data, { new: true})
+            const updateData = { ...data }
+            if (Object.prototype.hasOwnProperty.call(data, 'variants')) {
+                updateData.variants = normalizeVariants(data.variants, data.price ?? checkProduct.price)
+                updateData.countInStock = updateData.variants.length
+                    ? totalVariantStock(updateData.variants)
+                    : Number(data.countInStock ?? checkProduct.countInStock)
+            }
+            const updateProduct = await Product.findByIdAndUpdate(id, updateData, { new: true, runValidators: true })
             resolve({
                 status: 'OK',
                 message: 'SUCCESS',
@@ -119,8 +129,8 @@ const deleteProduct = (id) => {
                 _id: id
             })
             if(checkProduct === null) {
-                resolve({
-                    status: 'OK',
+                return resolve({
+                    status: 'ERR',
                     message: 'The Product is not defined'
                 })
             }
@@ -281,8 +291,8 @@ const getDetailProduct = (id) => {
                 _id: id
             })
             if(product === null) {
-                resolve({
-                    status: 'OK',
+                return resolve({
+                    status: 'ERR',
                     message: 'The product is not defined'
                 })
             }

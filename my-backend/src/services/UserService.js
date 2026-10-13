@@ -1,6 +1,8 @@
 const User = require("../models/UserModel")
 const bcrypt = require("bcrypt")
 const { genneralAccessToken, genneralRefreshToken } = require("./JwtService")
+const EmailService = require('./EmailService')
+const { createResetToken, hashResetToken } = require('../utils/passwordReset')
 
 const PUBLIC_USER_FIELDS = 'name email isAdmin phone address avatar city createdAt updatedAt'
 const ALLOWED_PROFILE_FIELDS = ['name', 'phone', 'address', 'avatar', 'city']
@@ -109,8 +111,8 @@ const updateUser = (id, data) => {
                 _id: id
             })
             if(checkUser === null) {
-                resolve({
-                    status: 'OK',
+                return resolve({
+                    status: 'ERR',
                     message: 'The user is not defined'
                 })
             }
@@ -145,8 +147,8 @@ const deleteUser = (id) => {
                 _id: id
             })
             if(checkUser === null) {
-                resolve({
-                    status: 'OK',
+                return resolve({
+                    status: 'ERR',
                     message: 'The user is not defined'
                 })
             }
@@ -210,8 +212,8 @@ const getDetailUser = (id) => {
                 _id: id
             }).select(PUBLIC_USER_FIELDS)
             if(user === null) {
-                resolve({
-                    status: 'OK',
+                return resolve({
+                    status: 'ERR',
                     message: 'The user is not defined'
                 })
             }
@@ -228,6 +230,44 @@ const getDetailUser = (id) => {
     })
 }
 
+const requestPasswordReset = async (email) => {
+    const generic = { status: 'OK', message: 'Nếu email tồn tại, hướng dẫn đặt lại mật khẩu đã được gửi.' }
+    const user = await User.findOne({ email: String(email).trim().toLowerCase() })
+    if (!user) return generic
+
+    const { token, tokenHash } = createResetToken()
+    const expiresMinutes = Number(process.env.PASSWORD_RESET_EXPIRES_MINUTES || 15)
+    user.passwordResetToken = tokenHash
+    user.passwordResetExpires = new Date(Date.now() + expiresMinutes * 60 * 1000)
+    await user.save({ validateBeforeSave: false })
+
+    const frontendUrl = String(process.env.FRONTEND_URL || 'http://localhost:3000').replace(/\/$/, '')
+    try {
+        await EmailService.sendPasswordResetEmail(user.email, `${frontendUrl}/reset-password/${token}`)
+    } catch (error) {
+        user.passwordResetToken = undefined
+        user.passwordResetExpires = undefined
+        await user.save({ validateBeforeSave: false })
+        throw error
+    }
+    return generic
+}
+
+const resetPassword = async (token, password) => {
+    const user = await User.findOne({
+        passwordResetToken: hashResetToken(token),
+        passwordResetExpires: { $gt: new Date() },
+    }).select('+passwordResetToken +passwordResetExpires')
+    if (!user) return { status: 'ERR', message: 'Liên kết đặt lại mật khẩu không hợp lệ hoặc đã hết hạn' }
+
+    user.password = await bcrypt.hash(password, 10)
+    user.passwordResetToken = undefined
+    user.passwordResetExpires = undefined
+    user.passwordChangedAt = new Date()
+    await user.save()
+    return { status: 'OK', message: 'Đặt lại mật khẩu thành công' }
+}
+
 
 
 module.exports = {
@@ -237,5 +277,7 @@ module.exports = {
     deleteUser,
     getAllUser,
     getDetailUser,
-    deleteManyUser
+    deleteManyUser,
+    requestPasswordReset,
+    resetPassword
 }

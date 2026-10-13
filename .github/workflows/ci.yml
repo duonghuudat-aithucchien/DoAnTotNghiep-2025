@@ -30,5 +30,14 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - name: Check chatbot syntax
-        run: python -m py_compile chatbot/app.py
+      - name: Test chatbot and evaluate offline regression set
+        working-directory: chatbot
+        run: |
+          pip install -r requirements-dev.txt
+          pytest
+          python -m evaluation.run --min-recall 0.95 --min-f1 0.95
+      - name: Upload chatbot regression report
+        uses: actions/upload-artifact@v4
+        with:
+          name: chatbot-offline-regression
+          path: chatbot/evaluation/reports/

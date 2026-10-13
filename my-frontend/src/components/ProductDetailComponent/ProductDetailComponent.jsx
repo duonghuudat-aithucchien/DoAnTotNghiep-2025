@@ -1,310 +1,173 @@
-import React, { useEffect, useState } from 'react'
-import {Col, Row, Image, Rate} from 'antd'
-import { WrapperStyleNameProduct, WrapperStyleTextSell, WrapperPriceProduct, WrapperPriceTextProduct, WrapperQualityProduct, WrapperInputNumber } from './style'
-import { MinusOutlined, PlusOutlined } from '@ant-design/icons'
-import ButtonComponent from '../../components/ButtonComponent/ButtonComponent'
-import * as ProductService from '../../service/ProductService'
-import { useQuery } from '@tanstack/react-query'
-import Loading from '../LoadingComponent/Loading'
-import { useSelector } from 'react-redux'
-import { useLocation, useNavigate } from 'react-router-dom'
-import { useDispatch } from 'react-redux';
-import { addOrderProduct, resetOrder } from '../../redux/slides/orderSlide'
-import convertPrice from '../../utils'
-import * as message from '../../components/Message/Message'
+import React, { useEffect, useMemo, useState } from 'react';
+import { Col, Row, Image, Rate } from 'antd';
+import { MinusOutlined, PlusOutlined } from '@ant-design/icons';
+import { useQuery } from '@tanstack/react-query';
+import { useDispatch, useSelector } from 'react-redux';
+import { WrapperStyleNameProduct, WrapperStyleTextSell, WrapperPriceProduct, WrapperPriceTextProduct, WrapperQualityProduct, WrapperInputNumber } from './style';
+import ButtonComponent from '../ButtonComponent/ButtonComponent';
+import Loading from '../LoadingComponent/Loading';
+import * as ProductService from '../../service/ProductService';
+import { addOrderProduct, resetOrder } from '../../redux/slides/orderSlide';
+import convertPrice from '../../utils';
+import * as message from '../Message/Message';
 
+const asArray = (value) => {
+  if (Array.isArray(value)) return value.filter(Boolean);
+  return typeof value === 'string' ? value.split(',').map((item) => item.trim()).filter(Boolean) : [];
+};
 
-const ProductDetailComponent = ({idProduct}) => {
-    const [numProduct, setNumProduct] = useState(1)
-    const [selectedSize, setSelectedSize] = useState('')
-    const [selectedColor, setSelectedColor] = useState('')
-    const user = useSelector((state) => state.user)
-    const order = useSelector((state) => state.order)
-    const [errorLimitOrder, setErrorLimitOrder] = useState(false)
-    const [selectedImage, setSelectedImage] = useState(null);
+const unique = (values) => [...new Set(values.filter(Boolean))];
 
-          
-    const navigate = useNavigate()
-    const location = useLocation()
-    const dispatch = useDispatch()
+const ProductDetailComponent = ({ idProduct }) => {
+  const [amount, setAmount] = useState(1);
+  const [selectedSize, setSelectedSize] = useState('');
+  const [selectedColor, setSelectedColor] = useState('');
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [stockError, setStockError] = useState(false);
+  const order = useSelector((state) => state.order);
+  const dispatch = useDispatch();
 
-    const onChange = (value) => {
-        setNumProduct(Number(value));
-    };
+  const { isPending, data: product } = useQuery({
+    queryKey: ['product-details', idProduct],
+    queryFn: async ({ queryKey }) => (await ProductService.getDetailsProduct(queryKey[1])).data,
+    enabled: Boolean(idProduct),
+  });
 
-    const fetchGetDetailsProduct = async (context) => {     
-        const id = context?.queryKey && context?.queryKey[1]
-        if(id) {
-            const res = await ProductService.getDetailsProduct(id);
-            return res.data
-        }               
-    };
+  const variants = useMemo(
+    () => (product?.variants || []).filter((variant) => variant.isActive !== false),
+    [product]
+  );
+  const hasVariants = variants.length > 0;
+  const colors = hasVariants ? unique(variants.map((variant) => variant.color)) : asArray(product?.colors);
+  const sizes = hasVariants
+    ? unique(variants.filter((variant) => !selectedColor || variant.color === selectedColor).map((variant) => variant.size))
+    : asArray(product?.sizes);
+  const selectedVariant = variants.find((variant) => variant.size === selectedSize && variant.color === selectedColor);
+  const currentStock = Number(selectedVariant?.stock ?? (hasVariants ? 0 : product?.countInStock || 0));
+  const currentPrice = Number(selectedVariant?.price ?? product?.price ?? 0);
 
-    useEffect(() => {
-        const orderRedux = order?.orderItems?.find((item) => item.product === productDetails?._id)
-        if((orderRedux?.amount + numProduct) <= orderRedux?.countInStock || !orderRedux) {
-            setErrorLimitOrder(false)
-        } else if(productDetails?.countInStock === 0) {
-            setErrorLimitOrder(true)
-        }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [numProduct])
+  useEffect(() => {
+    if (product?.image) setSelectedImage(product.image);
+  }, [product]);
 
-    useEffect(() => {
-        if(order.isSuccessOrder) {
-            message.success('Thêm sản phẩm vào giỏ hàng thành công')
-        }
-        return () => {
-            dispatch(resetOrder())
-        }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    },[order.isSuccessOrder])
+  useEffect(() => {
+    if (selectedVariant?.image) setSelectedImage(selectedVariant.image);
+    setAmount(1);
+    setStockError(false);
+  }, [selectedVariant]);
 
-    const handleChangeCount = (type, limited) => {
-        if(type === 'increase') {
-            if(!limited) {
-                setNumProduct(numProduct + 1)
-            }
-        } else {
-            if(!limited) {
-                setNumProduct(numProduct - 1)
-            }
-        }
+  useEffect(() => {
+    if (order.isSuccessOrder) message.success('Thêm sản phẩm vào giỏ hàng thành công');
+    return () => dispatch(resetOrder());
+  }, [order.isSuccessOrder, dispatch]);
+
+  const selectColor = (color) => {
+    setSelectedColor(color);
+    if (hasVariants && !variants.some((variant) => variant.color === color && variant.size === selectedSize)) {
+      setSelectedSize('');
     }
+  };
 
-    const { isPending, data: productDetails } = useQuery({
-        queryKey: ['product-details', idProduct],
-        queryFn: fetchGetDetailsProduct,
-        enabled: !!idProduct,
-    });
+  const addToCart = () => {
+    if ((sizes.length && !selectedSize) || (colors.length && !selectedColor)) {
+      message.error('Vui lòng chọn kích thước và màu sắc');
+      return;
+    }
+    if (hasVariants && !selectedVariant) {
+      message.error('Biến thể đã chọn không tồn tại');
+      return;
+    }
+    const existing = order.orderItems.find((item) => item.product === product?._id && (
+      selectedVariant ? item.variantId === selectedVariant._id : item.size === selectedSize && item.color === selectedColor
+    ));
+    if (currentStock < 1 || Number(existing?.amount || 0) + amount > currentStock) {
+      setStockError(true);
+      return;
+    }
+    dispatch(addOrderProduct({
+      orderItem: {
+        name: product.name,
+        amount,
+        image: selectedVariant?.image || product.image,
+        price: currentPrice,
+        product: product._id,
+        variantId: selectedVariant?._id,
+        sku: selectedVariant?.sku || '',
+        discount: product.discount || 0,
+        countInStock: currentStock,
+        description: product.description,
+        size: selectedSize,
+        color: selectedColor,
+        sizes: selectedSize,
+        colors: selectedColor,
+      },
+    }));
+    setStockError(false);
+  };
 
-    
+  const images = unique([product?.image, ...(product?.subImages || []), ...variants.map((variant) => variant.image)]);
+  const finalPrice = currentPrice - (Number(product?.discount || 0) * currentPrice) / 100;
 
-    const handleAddOrderProduct = () => {
-        if (!user?.id) {
-            navigate('/sign-in', { state: location?.pathname });
-        } else {
-            const orderRedux = order?.orderItems?.find(
-                (item) =>
-                    item.product === productDetails?._id &&
-                    item.sizes === selectedSize &&
-                    item.colors === selectedColor // So sánh cả size và color
-            );
-    
-            if (
-                (orderRedux?.amount + numProduct) <= orderRedux?.countInStock ||
-                !orderRedux
-            ) {
-                if (!selectedSize || !selectedColor) {
-                    message.error("Vui lòng chọn kích thước và màu sắc!");
-                    return;
-                }
-    
-                dispatch(
-                    addOrderProduct({
-                        orderItem: {
-                            name: productDetails?.name,
-                            amount: numProduct,
-                            image: productDetails?.image,
-                            price: productDetails?.price,
-                            product: productDetails?._id,
-                            discount: productDetails?.discount,
-                            countInStock: productDetails?.countInStock,
-                            description: productDetails?.description,
-                            sizes: selectedSize, // Chỉ gửi kích thước đã chọn
-                            colors: selectedColor, // Chỉ gửi màu sắc đã chọn
-                        },
-                    })
-                );
-            } else {
-                setErrorLimitOrder(true);
-            }
-        }
-    };
-
-
-    
-    
-
-
-        useEffect(() => {
-        if (productDetails?.image) {
-          setSelectedImage(productDetails.image);
-        }
-      }, [productDetails]); 
-
-     
-    const parseToArray = (field) => {
-        if (Array.isArray(field)) return field.filter((item) => item.trim() !== "");
-        if (typeof field === "string") return field.split(",").map((item) => item.trim()).filter((item) => item !== "");
-        return [];
-      };
-  
-    const colors = parseToArray(productDetails?.colors);
-    const sizes = parseToArray(productDetails?.sizes);
-    ;
-      
-
-    return (
-        <Loading isPending={isPending}>
-            <Row style={{padding: '16px', background: '#fff', borderRadius: '4px'}}>
-
-            <Col span={10}>
-              <Row style={{ display: 'flex', gap: '24px' }}>
-                {/* Ảnh phụ */}
-                <div style={{ width: '80px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                  {[productDetails?.image, ...(productDetails?.subImages || [])].map((img, idx) => (
-                    <div
-                      key={idx}
-                      onClick={() => setSelectedImage(img)}
-                      style={{
-                        border: selectedImage === img ? '2px solid #000' : '1px solid #e5e5e5',
-                        borderRadius: '8px',
-                        padding: '4px',
-                        cursor: 'pointer',
-                      }}
-                    >
-                      <Image
-                        src={img}
-                        alt={`thumb-${idx}`}
-                        preview={true}
-                        style={{ borderRadius: '4px', width: '100%', objectFit: 'cover' }}
-                      />
-                    </div>
-                  ))}
+  return (
+    <Loading isPending={isPending}>
+      <Row style={{ padding: 16, background: '#fff', borderRadius: 4 }}>
+        <Col xs={24} md={10}>
+          <Row style={{ display: 'flex', gap: 24 }}>
+            <div style={{ width: 80, display: 'flex', flexDirection: 'column', gap: 12 }}>
+              {images.map((image) => (
+                <div key={image} onClick={() => setSelectedImage(image)} style={{ border: selectedImage === image ? '2px solid #000' : '1px solid #e5e5e5', borderRadius: 8, padding: 4, cursor: 'pointer' }}>
+                  <Image src={image} alt="Ảnh sản phẩm" preview={false} style={{ borderRadius: 4, width: '100%', objectFit: 'cover' }} />
                 </div>
+              ))}
+            </div>
+            <div style={{ flex: 1 }}>
+              <Image src={selectedImage || product?.image} alt={product?.name} style={{ borderRadius: 12, width: '100%', objectFit: 'contain', background: '#f9f9f9', padding: 12 }} />
+            </div>
+          </Row>
+        </Col>
 
-                {/* Ảnh chính */}
-                <div style={{ flex: 1 }}>
-                  <Image
-                    src={selectedImage || productDetails?.image}
-                    alt="main-product"
-                    preview={true}
-                    style={{
-                      borderRadius: '12px',
-                      width: '100%',
-                      height: 'auto',
-                      objectFit: 'contain',
-                      backgroundColor: '#f9f9f9',
-                      padding: '12px',
-                    }}
-                  />
-                </div>
-              </Row>
-            </Col>
+        <Col xs={24} md={14} style={{ paddingLeft: 16 }}>
+          <WrapperStyleNameProduct>{product?.name}</WrapperStyleNameProduct>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, margin: '10px 0' }}>
+            <Rate allowHalf value={product?.rating} disabled style={{ fontSize: 16 }} />
+            <WrapperStyleTextSell>| Đã bán: {product?.selled || 0}</WrapperStyleTextSell>
+          </div>
+          <WrapperPriceProduct style={{ margin: '16px 0' }}>
+            <WrapperPriceTextProduct style={{ fontSize: 28, color: '#ff424e', fontWeight: 600 }}>{convertPrice(finalPrice)}</WrapperPriceTextProduct>
+            {product?.discount > 0 && <><span style={{ marginLeft: 12, textDecoration: 'line-through', color: '#999' }}>{convertPrice(currentPrice)}</span><span style={{ marginLeft: 8, color: '#f5222d' }}>-{product.discount}%</span></>}
+          </WrapperPriceProduct>
+          <p>{product?.description}</p>
 
-                <Col span={14} style={{paddingLeft:'10px'}}>
-                    <WrapperStyleNameProduct>{productDetails?.name}</WrapperStyleNameProduct>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', margin: '10px 0' }}>
-                        <Rate allowHalf value={productDetails?.rating} disabled style={{ fontSize: '16px' }} />
-                        <WrapperStyleTextSell>| Đã bán: {productDetails?.selled}</WrapperStyleTextSell>
-                    </div>
+          {colors.length > 0 && <div style={{ margin: '24px 0' }}>
+            <div style={{ fontWeight: 500, marginBottom: 8 }}>Chọn màu sắc</div>
+            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>{colors.map((color) => (
+              <button key={color} onClick={() => selectColor(color)} style={{ padding: '7px 14px', borderRadius: 20, border: selectedColor === color ? '2px solid #000' : '1px solid #ccc', background: selectedColor === color ? '#000' : '#fff', color: selectedColor === color ? '#fff' : '#000', cursor: 'pointer' }}>{color}</button>
+            ))}</div>
+          </div>}
 
-                    <WrapperPriceProduct style={{ margin: '16px 0' }}>
-                        <WrapperPriceTextProduct style={{ fontSize: '28px', color: '#ff424e', fontWeight: 600 }}>
-                            {convertPrice((productDetails?.price) - (productDetails?.discount*productDetails?.price)/100)}
-                            {/* {convertPrice(totalPriceMemo)} */}
-                        </WrapperPriceTextProduct>
-                        {productDetails?.discount && (
-                            <>
-                                <span style={{ marginLeft: '12px', textDecoration: 'line-through', color: '#ccc', fontSize: '18px' }}>
-                                {convertPrice(productDetails?.price?.toLocaleString())} </span>
-                                <span style={{ marginLeft: '8px', color: '#f5222d', fontSize: '16px' }}>{productDetails?.discount} %</span>
-                            </>
-                        )}
-                    </WrapperPriceProduct>
+          {sizes.length > 0 && <div style={{ marginBottom: 24 }}>
+            <div style={{ fontWeight: 500, marginBottom: 8 }}>Chọn kích thước</div>
+            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>{sizes.map((size) => {
+              const available = !hasVariants || variants.some((variant) => variant.color === selectedColor && variant.size === size && variant.stock > 0);
+              return <button key={size} disabled={!available} onClick={() => setSelectedSize(size)} style={{ padding: '8px 16px', borderRadius: 20, border: selectedSize === size ? '2px solid #000' : '1px solid #ccc', background: selectedSize === size ? '#000' : '#fff', color: selectedSize === size ? '#fff' : '#000', opacity: available ? 1 : 0.4, cursor: available ? 'pointer' : 'not-allowed' }}>{size}</button>;
+            })}</div>
+          </div>}
 
-                    <p style={{ fontSize: '15px', color: '#333' }}>{productDetails?.description}</p>
+          <div style={{ margin: '20px 0', padding: '10px 0', borderTop: '1px solid #e5e5e5', borderBottom: '1px solid #e5e5e5' }}>
+            <div style={{ marginBottom: 10 }}>Số lượng — còn {currentStock} sản phẩm</div>
+            <WrapperQualityProduct>
+              <button disabled={amount <= 1} onClick={() => setAmount((value) => Math.max(1, value - 1))}><MinusOutlined /></button>
+              <WrapperInputNumber min={1} max={Math.max(1, currentStock)} value={amount} onChange={(value) => setAmount(Number(value || 1))} size="small" />
+              <button disabled={amount >= currentStock} onClick={() => setAmount((value) => Math.min(currentStock, value + 1))}><PlusOutlined /></button>
+            </WrapperQualityProduct>
+          </div>
 
-                   
+          <ButtonComponent size={40} styleButton={{ background: '#000', height: 48, width: 220, border: 'none', borderRadius: 4 }} onClick={addToCart} textButton="Thêm vào giỏ hàng" styleTextButton={{ color: '#fff', fontSize: 15, fontWeight: 700 }} />
+          {stockError && <div style={{ color: 'red', marginTop: 8 }}>Số lượng vượt quá tồn kho của biến thể</div>}
+        </Col>
+      </Row>
+    </Loading>
+  );
+};
 
-                {/* Màu sắc */}
-                {colors.length > 0 && (
-                  <div style={{ margin: '24px 0' }}>
-                    <div style={{ fontWeight: 500, marginBottom: 8 }}>Chọn màu sắc</div>
-                    <div style={{ display: 'flex', gap: 12 }}>
-                      {colors.map((color) => (
-                        <div
-                          key={color}
-                          onClick={() => setSelectedColor(color)}
-                          style={{
-                            width: 28,
-                            height: 28,
-                            borderRadius: '50%',
-                            backgroundColor: color,
-                            border: selectedColor === color ? '2px solid #000' : '1px solid #ccc',
-                            cursor: 'pointer',
-                            boxShadow: selectedColor === color ? '0 0 0 2px #00000055' : 'none',
-                            transition: 'all 0.2s ease',
-                          }}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                    {/* Kích thước */}
-                    {sizes.length > 0 && (
-                      <div style={{ marginBottom: 24 }}>
-                        <div style={{ fontWeight: 500, marginBottom: 8 }}>Chọn kích thước</div>
-                        <div style={{ display: 'flex', gap: 12 }}>
-                          {sizes.map((size) => (
-                            <div
-                              key={size}
-                              onClick={() => setSelectedSize(size)}
-                              style={{
-                                padding: '8px 16px',
-                                borderRadius: '24px',
-                                border: selectedSize === size ? '2px solid #000' : '1px solid #ccc',
-                                backgroundColor: selectedSize === size ? '#000' : '#fff',
-                                color: selectedSize === size ? '#fff' : '#000',
-                                fontWeight: 500,
-                                cursor: 'pointer',
-                                transition: 'all 0.2s ease',
-                              }}
-                            >
-                              {size}
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-
-                    <div style={{margin: '20px 0', padding:'10px 0', borderTop:'1px solid #e5e5e5', borderBottom:'1px solid #e5e5e5'}}>
-                        <div style={{marginBottom: '10px'}}>Số lượng</div>
-                        <WrapperQualityProduct>
-                            <button
-                                style={{ border: 'none', background: 'transparent', cursor: numProduct > 1 ? 'pointer' : 'not-allowed' }}
-                                onClick={() => handleChangeCount('decrease', numProduct === 1)}
-                                disabled={numProduct <= 1}
-                            >
-                                <MinusOutlined style={{ color: '#000', fontSize: '20px' }} />
-                            </button>
-                            <WrapperInputNumber onChange={onChange} defaultValue={1} min={1} max={productDetails?.countInStock} value={numProduct} size="small" />
-                            <button style={{border:'none', background: 'transparent', cursor: numProduct >= productDetails?.countInStock ? 'not-allowed' : 'pointer'}} onClick={() => handleChangeCount('increase', numProduct === productDetails?.countInStock)}>
-                                <PlusOutlined style={{color: '#000', fontSize: '20px'}}/>
-                            </button>
-                        </WrapperQualityProduct>
-                    </div>
-
-                    <div style={{display:'flex', alignItems:'center', gap:'12px'}}>
-                        <div>
-                            <ButtonComponent
-                                size={40}
-                                styleButton={{background: '#000000', height:'48px', width: '220px', border:'none', borderRadius: '4px'}}
-                                onClick={handleAddOrderProduct}
-                                textButton={'Thêm vào giỏ hàng'}
-                                styleTextButton={{color: '#fff',  fontSize:'15px', fontWeight: '700'}}
-                            />
-                            {errorLimitOrder && <div style={{ color: 'red' }}> Sản phẩm đã hết hàng</div>}
-                        </div>
-                    </div>
-                </Col>
-
-            </Row>
-        </Loading>
-    )
-}
-
-export default ProductDetailComponent
+export default ProductDetailComponent;

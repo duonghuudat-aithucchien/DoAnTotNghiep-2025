@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import * as UserService from '../../service/UserService';
 import { resetUser } from '../../redux/slides/userSlide';
+import { loadCartFromLocal } from '../../redux/slides/orderSlide';
 import { markAllAsRead } from '../../redux/slides/notificationSlice';
 
 import {
@@ -36,6 +37,7 @@ const HeaderComponent = () => {
   const handleLogout = async () => {
     await UserService.logoutUser();
     dispatch(resetUser());
+    dispatch(loadCartFromLocal(null));
     navigate('/');
   };
 

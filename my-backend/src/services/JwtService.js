@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken')
 const dotenv = require('dotenv')
+const User = require('../models/UserModel')
 dotenv.config()
 
 const genneralAccessToken = async (payload) => {
@@ -28,6 +29,10 @@ const refreshTokenJwtService = (token) => {
                         status: 'ERR',
                         message: 'The authentication'
                     })
+                }
+                const currentUser = await User.findById(user?.id).select('+passwordChangedAt')
+                if (!currentUser || (currentUser.passwordChangedAt && currentUser.passwordChangedAt.getTime() > user.iat * 1000)) {
+                    return resolve({ status: 'ERR', message: 'Phiên đăng nhập đã hết hiệu lực' })
                 }
                 const access_token = await genneralAccessToken ({
                     id: user?.id,

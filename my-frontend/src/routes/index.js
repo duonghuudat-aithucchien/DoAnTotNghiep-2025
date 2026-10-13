@@ -16,6 +16,8 @@ const PaymentPage = lazy(() => import('../pages/PaymentPage/PaymentPage'));
 const OrderSuccess = lazy(() => import('../pages/OrderSuccess/OrderSuccess'));
 const MyOrderPage = lazy(() => import('../pages/MyOrderPage/MyOrderPage'));
 const DetailsOrderPage = lazy(() => import('../pages/DetailsOrderPage/DetailsOrderPage'));
+const ForgotPasswordPage = lazy(() => import('../pages/ForgotPasswordPage/ForgotPasswordPage'));
+const ResetPasswordPage = lazy(() => import('../pages/ResetPasswordPage/ResetPasswordPage'));
 
 
 export const routes = [
@@ -99,6 +101,16 @@ export const routes = [
     {
         path: '/sign-up',
         page: SignUpPage,
+        isShowHeader: false
+    },
+    {
+        path: '/forgot-password',
+        page: ForgotPasswordPage,
+        isShowHeader: false
+    },
+    {
+        path: '/reset-password/:token',
+        page: ResetPasswordPage,
         isShowHeader: false
     },
     {

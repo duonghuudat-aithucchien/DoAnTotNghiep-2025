@@ -21,6 +21,7 @@ import * as OrderService from '../../service/OrderService';
 import { WrapperRadio, Label } from './style';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { removeAllOrderProduct } from '../../redux/slides/orderSlide';
+import { getCartItemId } from '../../utils/cart';
 import { PayPalButtons, PayPalScriptProvider } from '@paypal/react-paypal-js';
 import * as PaymentService from '../../service/PaymentService';
 import * as VoucherService from '../../service/VoucherService';
@@ -246,7 +247,7 @@ const PaymentPage = () => {
 
     const arrayOrdered = [];
     order?.orderItemsSelected?.forEach((el) => {
-      arrayOrdered.push(el.product);
+      arrayOrdered.push(getCartItemId(el));
     });
 
     const orderPayload = {
@@ -355,6 +356,7 @@ const PaymentPage = () => {
     paypalDatabaseOrderId.current = response.data._id;
     return actions.order.create({
       purchase_units: [{
+        custom_id: response.data._id,
         amount: {
           value: (response.data.totalPrice / PAYPAL_VND_PER_USD).toFixed(2),
           currency_code: 'USD',
@@ -371,8 +373,8 @@ const PaymentPage = () => {
     }, token);
     if (verification?.status !== 'OK') throw new Error(verification?.message || 'Không thể xác minh thanh toán PayPal');
 
-    const selectedProductIds = order.orderItemsSelected.map((item) => item.product);
-    dispatch(removeAllOrderProduct({ listChecked: selectedProductIds }));
+    const selectedCartItemIds = order.orderItemsSelected.map(getCartItemId);
+    dispatch(removeAllOrderProduct({ listChecked: selectedCartItemIds }));
     message.success('Đặt hàng thành công');
     navigate('/orderSuccess', {
       state: {

@@ -13,7 +13,7 @@ import Loading from '../../components/LoadingComponent/Loading'
 import { jwtDecode } from 'jwt-decode';
 import { useDispatch } from 'react-redux'
 import { updateUser } from '../../redux/slides/userSlide'
-import { loadCartFromLocal } from '../../redux/slides/orderSlide'
+import { mergeGuestCart } from '../../redux/slides/orderSlide'
 
 const SignInPage = () => {
   const [isShowPassword, setIsShowPassword] = useState(false)
@@ -26,7 +26,7 @@ const SignInPage = () => {
   const mutation = useMutationHooks(
     data => UserSerVice.LoginUser(data)
   )
-  const { data, isPending, isSuccess} = mutation
+  const { data, isPending, isSuccess, isError, error } = mutation
   //console.log('mutation', mutation)
 
   const handleGetDetailsUser = useCallback(async(id, token) => {
@@ -62,7 +62,7 @@ const SignInPage = () => {
 
       if (decoded?.id) {
         await handleGetDetailsUser(decoded.id, data.access_token);
-        dispatch(loadCartFromLocal(decoded.id));
+        dispatch(mergeGuestCart(decoded.id));
 
         // ✅ Ép kiểu rõ ràng isAdmin
         const isAdmin = decoded?.isAdmin === 'true' || decoded?.isAdmin === true;
@@ -95,10 +95,9 @@ const SignInPage = () => {
 
   const handleSignIn = () => {
     mutation.mutate({
-      email,
+      email: email.trim().toLowerCase(),
       password
     })
-    console.log('sign-in', email, password)
   }
 
   const handleNavigateSignUp = () => {
@@ -129,6 +128,7 @@ const SignInPage = () => {
           </div>
 
           {data?.status === 'ERR' && <span style={{color: 'red'}}>{data?.message}</span>}
+          {isError && <span style={{color: 'red'}}>{error?.response?.data?.message || 'Không thể kết nối đến máy chủ'}</span>}
           <Loading isPending={isPending}>
           <ButtonComponent
                   disabled={!email.length || !password.length}
@@ -139,7 +139,7 @@ const SignInPage = () => {
                   styleTextButton={{color: '#fff',  fontSize:'15px', fontWeight: '700'}}
           ></ButtonComponent>
           </Loading>
-              <p><WrapperTextLight>Quên mật khẩu</WrapperTextLight></p>
+              <p><WrapperTextLight onClick={() => navigate('/forgot-password')}>Quên mật khẩu</WrapperTextLight></p>
               <p>Chưa có tài khoản? <WrapperTextLight onClick = {handleNavigateSignUp}>Tạo tài khoản</WrapperTextLight></p>
         </WrapperContainerLeft>
         <WrapperContainerRight>

@@ -19,6 +19,11 @@ __pycache__/
 .Python
 env/
 venv/
+.venv/
+.runtime/
+.cache/
+chatbot/evaluation/reports/
+.pytest_cache/
 ENV/
 env.bak/
 venv.bak/

@@ -1,90 +1,50 @@
 const { filterProducts: filterProductsService } = require('../services/FilterService');
+const { sendError, sendServiceResult } = require('../utils/httpResponse');
+
+const parsePaging = (req, res) => {
+  const limit = Number.parseInt(req.query.limit || '10', 10);
+  const page = Number.parseInt(req.query.page || '0', 10);
+  if (!Number.isInteger(limit) || limit < 1 || limit > 100 || !Number.isInteger(page) || page < 0) {
+    sendError(res, 'limit hoặc page không hợp lệ', 400);
+    return null;
+  }
+  return { limit, page };
+};
 
 const filterProducts = async (req, res) => {
   try {
-    let { limit = 10, page = 0, sort = 'desc', colors, sizes, rating, type } = req.query;
-
-    limit = parseInt(limit);
-    page = parseInt(page);
-
-    if (isNaN(limit) || isNaN(page)) {
-      return res.status(400).json({ status: 'ERR', message: 'limit hoặc page không hợp lệ.' });
-    }
-
+    const paging = parsePaging(req, res);
+    if (!paging) return;
     const filters = {};
-
-    if (typeof colors === 'string' && colors.length > 0) {
-      filters.colors = colors.split(',');
+    if (req.query.colors) filters.colors = String(req.query.colors).split(',');
+    if (req.query.sizes) filters.sizes = String(req.query.sizes).split(',');
+    if (req.query.rating !== undefined) {
+      const rating = Number(req.query.rating);
+      if (!Number.isFinite(rating)) return sendError(res, 'Giá trị rating không hợp lệ', 400);
+      filters.rating = rating;
     }
-
-    if (typeof sizes === 'string' && sizes.length > 0) {
-      filters.sizes = sizes.split(',');
-    }
-
-    if (rating !== undefined) {
-      const ratingNumber = Number(rating);
-      if (isNaN(ratingNumber)) {
-        return res.status(400).json({ status: 'ERR', message: 'Giá trị rating không hợp lệ.' });
-      }
-      filters.rating = ratingNumber;
-    }
-
-    if (type) {
-      filters.type = type;
-    }
-
-    const response = await filterProductsService(filters, limit, page, sort);
-    return res.status(200).json(response);
+    if (req.query.type) filters.type = req.query.type;
+    return sendServiceResult(res, await filterProductsService(filters, paging.limit, paging.page, req.query.sort || 'desc'));
   } catch (error) {
-    console.error("Lỗi khi gọi filterProducts:", error);
-    return res.status(500).json({
-      status: 'ERROR',
-      message: 'Đã xảy ra lỗi khi lọc sản phẩm',
-      error: error.message,
-    });
+    console.error(error);
+    return sendError(res, 'Đã xảy ra lỗi khi lọc sản phẩm', 500);
   }
 };
 
 const filterTopSellingProducts = async (req, res) => {
   try {
-    const limit = parseInt(req.query.limit) || 50;
-    const page = parseInt(req.query.page) || 0;
-
-    const filters = {}; // không cần type
-
-    const response = await filterProductsService(filters, limit, page, 'selled'); // sort theo selled
-    return res.status(200).json(response);
-  } catch (error) {
-    console.error("Lỗi khi gọi filterTopSellingProducts:", error);
-    return res.status(500).json({
-      status: 'ERROR',
-      message: 'Lỗi khi lọc sản phẩm bán chạy',
-      error: error.message,
-    });
-  }
+    const paging = parsePaging(req, res);
+    if (!paging) return;
+    return sendServiceResult(res, await filterProductsService({}, paging.limit, paging.page, 'selled'));
+  } catch { return sendError(res, 'Lỗi khi lọc sản phẩm bán chạy', 500); }
 };
 
 const filterTopNewProducts = async (req, res) => {
   try {
-    const limit = parseInt(req.query.limit) || 50;
-    const page = parseInt(req.query.page) || 0;
-
-    const filters = {};
-
-    const response = await filterProductsService(filters, limit, page, 'createdAt'); // sort theo ngày tạo
-    return res.status(200).json(response);
-  } catch (error) {
-    console.error("Lỗi khi gọi filterTopNewProducts:", error);
-    return res.status(500).json({
-      status: 'ERROR',
-      message: 'Lỗi khi lọc sản phẩm mới',
-      error: error.message,
-    });
-  }
+    const paging = parsePaging(req, res);
+    if (!paging) return;
+    return sendServiceResult(res, await filterProductsService({}, paging.limit, paging.page, 'createdAt'));
+  } catch { return sendError(res, 'Lỗi khi lọc sản phẩm mới', 500); }
 };
 
-module.exports = {
-  filterProducts,
-  filterTopSellingProducts,
-  filterTopNewProducts,
-};
+module.exports = { filterProducts, filterTopSellingProducts, filterTopNewProducts };

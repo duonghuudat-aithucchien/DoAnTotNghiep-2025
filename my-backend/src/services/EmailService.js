@@ -2,6 +2,34 @@ const nodemailer = require("nodemailer");
 const dotenv = require('dotenv');
 dotenv.config()
 
+const createTransporter = () => {
+    if (!process.env.MAIL_ACCOUNT || !process.env.MAIL_PASSWORD) {
+        throw new Error('Chưa cấu hình MAIL_ACCOUNT và MAIL_PASSWORD');
+    }
+    return nodemailer.createTransport({
+        host: process.env.MAIL_HOST || 'smtp.gmail.com',
+        port: Number(process.env.MAIL_PORT || 465),
+        secure: String(process.env.MAIL_SECURE || 'true') === 'true',
+        auth: { user: process.env.MAIL_ACCOUNT, pass: process.env.MAIL_PASSWORD },
+    });
+};
+
+const escapeHtml = (value) => String(value).replace(/[&<>'"]/g, (character) => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;',
+}[character]));
+
+const sendPasswordResetEmail = async (email, resetUrl) => {
+    const transporter = createTransporter();
+    const safeUrl = escapeHtml(resetUrl);
+    await transporter.sendMail({
+        from: process.env.MAIL_FROM || process.env.MAIL_ACCOUNT,
+        to: email,
+        subject: 'Đặt lại mật khẩu FashionStyle',
+        text: `Mở liên kết sau để đặt lại mật khẩu (liên kết sẽ hết hạn): ${resetUrl}`,
+        html: `<p>Bạn vừa yêu cầu đặt lại mật khẩu.</p><p><a href="${safeUrl}">Đặt lại mật khẩu</a></p><p>Nếu không phải bạn yêu cầu, hãy bỏ qua email này.</p>`,
+    });
+};
+
 const sendEmailCreateOrder = async (email, orderItems) => {
     try {
         if (!process.env.MAIL_ACCOUNT || process.env.MAIL_ACCOUNT.includes('YOUR_GMAIL') || !process.env.MAIL_PASSWORD || process.env.MAIL_PASSWORD.includes('YOUR_GMAIL')) {
@@ -70,5 +98,6 @@ const sendEmailSubscribe = async (subscriberEmail) => {
 
 module.exports = {
     sendEmailCreateOrder,
-    sendEmailSubscribe
+    sendEmailSubscribe,
+    sendPasswordResetEmail
 }
